@@ -1,5 +1,6 @@
 ---
 import '../styles/globals.css';
+import CustomCursor from '../components/CustomCursor';
 
 interface Props {
   title?: string;
@@ -31,7 +32,8 @@ const {
     />
     <title>{title}</title>
   </head>
-  <body class="min-h-screen antialiased">
+  <body class="min-h-screen antialiased cursor-none">
+    <CustomCursor client:load />
     <slot />
   </body>
 </html>
