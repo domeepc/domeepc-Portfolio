@@ -1,21 +1,65 @@
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { useEffect } from "react";
+import { motion, useMotionValue, useSpring, useTransform, MotionValue } from "framer-motion";
+import { useEffect, useState } from "react";
 import { scrollToHash } from "@/lib/smoothScroll";
 import { ArrowDown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { profile } from "@/lib/data";
 
-const particles = Array.from({ length: 12 }, (_, i) => ({
-  id: i,
-  size: Math.random() * 6 + 2,
-  left: `${Math.random() * 100}%`,
-  top: `${Math.random() * 100}%`,
-  duration: `${Math.random() * 4 + 4}s`,
-  delay: `${Math.random() * 3}s`,
-  depth: Math.random() * 0.8 + 0.2,
-}));
+interface Particle {
+  id: number;
+  size: number;
+  left: string;
+  top: string;
+  duration: string;
+  delay: string;
+  depth: number;
+}
+
+function makeParticles(): Particle[] {
+  return Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 6 + 2,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    duration: `${Math.random() * 4 + 4}s`,
+    delay: `${Math.random() * 3}s`,
+    depth: Math.random() * 0.8 + 0.2,
+  }));
+}
+
+function ParticleNode({
+  p,
+  springX,
+  springY,
+}: {
+  p: Particle;
+  springX: MotionValue<number>;
+  springY: MotionValue<number>;
+}) {
+  const px = useTransform(springX, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
+  const py = useTransform(springY, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
+  return (
+    <motion.div
+      className="particle absolute pointer-events-none"
+      style={
+        {
+          width: p.size,
+          height: p.size,
+          left: p.left,
+          top: p.top,
+          "--duration": p.duration,
+          "--delay": p.delay,
+          x: px,
+          y: py,
+        } as React.CSSProperties
+      }
+    />
+  );
+}
 
 export default function Hero() {
+  const [particles, setParticles] = useState<Particle[]>([]);
+
   const rawX = useMotionValue(0);
   const rawY = useMotionValue(0);
 
@@ -28,6 +72,8 @@ export default function Hero() {
   const gridY = useTransform(springY, [-0.5, 0.5], ["-2%", "2%"]);
 
   useEffect(() => {
+    setParticles(makeParticles());
+
     const handleMouseMove = (e: MouseEvent) => {
       rawX.set(e.clientX / window.innerWidth - 0.5);
       rawY.set(e.clientY / window.innerHeight - 0.5);
@@ -53,28 +99,9 @@ export default function Hero() {
       </motion.div>
 
       {/* Floating particles — per-particle depth parallax */}
-      {particles.map((p) => {
-        const px = useTransform(springX, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
-        const py = useTransform(springY, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
-        return (
-          <motion.div
-            key={p.id}
-            className="particle absolute pointer-events-none"
-            style={
-              {
-                width: p.size,
-                height: p.size,
-                left: p.left,
-                top: p.top,
-                "--duration": p.duration,
-                "--delay": p.delay,
-                x: px,
-                y: py,
-              } as React.CSSProperties
-            }
-          />
-        );
-      })}
+      {particles.map((p) => (
+        <ParticleNode key={p.id} p={p} springX={springX} springY={springY} />
+      ))}
 
       {/* Grid overlay — very subtle parallax */}
       <motion.div

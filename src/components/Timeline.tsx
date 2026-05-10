@@ -59,9 +59,10 @@ function TimelineCard({
   const scale   = useTransform(scrollYProgress, [start, end], [0.95, 1]);
 
   return (
-    <motion.div style={{ opacity, y, scale }} className="relative flex gap-4 md:gap-6 pl-2 md:pl-4">
+    <motion.div style={{ opacity, y, scale }} className="relative flex gap-2 md:gap-6 pl-0 md:pl-4">
       {/* Icon node */}
       <div className="relative z-10 shrink-0">
+
         <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
           <Icon size={14} className={config.color} />
         </div>
@@ -132,6 +133,7 @@ export default function Timeline() {
       style={{ minHeight: `${N * 60 + 80}vh` }}
     >
       <div className="sticky mb-64 md:mb-0 top-1/2 md:top-0 h-screen flex items-center justify-center">
+
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
 
         <motion.div
@@ -139,6 +141,7 @@ export default function Timeline() {
           className="w-full max-w-3xl mx-auto px-4 md:px-6"
         >
           {/* Header */}
+
           <div className="text-center mb-12">
             <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-2 md:mb-3">
               Journey
@@ -154,14 +157,14 @@ export default function Timeline() {
           {/* Timeline */}
           <div className="relative">
             {/* Glowing line */}
-            <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-border">
+            <div className="absolute left-4 md:left-8 top-0 bottom-0 w-px bg-border">
               <motion.div
                 className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
                 style={{ height: lineHeight }}
               />
             </div>
 
-            <div className="space-y-3 md:space-y-6">
+            <div className="space-y-2 md:space-y-6">
               {timeline.map((entry, i) => (
                 <TimelineCard
                   key={`${entry.year}-${entry.title}`}
