@@ -1,32 +1,93 @@
 import { motion } from 'framer-motion';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { skills } from '@/lib/data';
+import type { Skill } from '@/lib/data';
 
 const levelColors = {
-  Expert: 'border-violet-400 bg-violet-400/10 text-violet-300',
+  Expert:     'border-violet-400 bg-violet-400/10 text-violet-300',
   Proficient: 'border-violet-500/50 bg-violet-500/10 text-violet-400',
-  Learning: 'border-violet-700/50 bg-violet-700/10 text-violet-500',
+  Learning:   'border-violet-700/50 bg-violet-700/10 text-violet-500',
 };
 
 const levelDot = {
-  Expert: 'bg-violet-400',
+  Expert:     'bg-violet-400',
   Proficient: 'bg-violet-500',
-  Learning: 'bg-violet-700',
+  Learning:   'bg-violet-700',
 };
 
-const categoryLabels: Record<string, string> = {
-  Language: 'Languages',
-  Framework: 'Frameworks & Runtimes',
-  Tool: 'Tools & Platforms',
-};
+function SkillPill({ skill }: { skill: Skill }) {
+  return (
+    <div
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm cursor-default shrink-0 ${levelColors[skill.level]}`}
+    >
+      <span className={`w-2 h-2 rounded-full ${levelDot[skill.level]}`} />
+      {skill.name}
+      <span className="text-[10px] opacity-60 font-normal ml-1">{skill.level}</span>
+    </div>
+  );
+}
 
-const categories = ['Language', 'Framework', 'Tool'] as const;
+function MarqueeRow({
+  items,
+  direction,
+  speed,
+  label,
+}: {
+  items: Skill[];
+  direction: 'left' | 'right';
+  speed: number;
+  label: string;
+}) {
+  // Repeat until we have at least 10 items per half so the track always
+  // overflows the viewport regardless of how few items the row has.
+  const minCount = 10;
+  const copies = Math.ceil(minCount / items.length);
+  const filled = Array.from({ length: copies }, () => items).flat();
+  // Duplicate the filled list so the seamless loop always has two identical halves.
+  const doubled = [...filled, ...filled];
+
+  return (
+    <div>
+      <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3 px-1">
+        {label}
+      </p>
+      {/* Fade edges */}
+      <div
+        className="overflow-hidden relative"
+        style={{
+          maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
+        }}
+      >
+        <div
+          className="marquee-track flex gap-3 w-max"
+          style={{
+            animationName: 'marquee-scroll',
+            animationDuration: `${speed}s`,
+            animationDirection: 'normal',
+            // Offset rightward rows by half the duration so they appear
+            // mid-cycle — visually scrolling the opposite way with no snap.
+            animationDelay: direction === 'right' ? `-${speed / 2}s` : '0s',
+          }}
+        >
+          {doubled.map((skill, i) => (
+            <SkillPill key={`${skill.name}-${i}`} skill={skill} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Skills() {
   const { ref, isInView } = useScrollAnimation();
 
+  const languages  = skills.filter((s) => s.category === 'Language');
+  const frameworks = skills.filter((s) => s.category === 'Framework');
+  const tools      = skills.filter((s) => s.category === 'Tool');
+
   return (
-    <section id="skills" className="py-24 px-6 relative">
+    <section id="skills" className="py-24 px-6 relative overflow-hidden">
       {/* Background accent */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
 
@@ -49,51 +110,23 @@ export default function Skills() {
           </p>
         </motion.div>
 
-        {/* Skill categories */}
-        <div className="space-y-10">
-          {categories.map((cat, catIdx) => {
-            const catSkills = skills.filter((s) => s.category === cat);
-            return (
-              <motion.div
-                key={cat}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: catIdx * 0.15 }}
-              >
-                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-4">
-                  {categoryLabels[cat]}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {catSkills.map((skill, i) => (
-                    <motion.div
-                      key={skill.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                      transition={{
-                        duration: 0.4,
-                        delay: catIdx * 0.15 + i * 0.07,
-                      }}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm transition-all duration-300 cursor-default ${levelColors[skill.level]}`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${levelDot[skill.level]}`} />
-                      {skill.name}
-                      <span className="text-[10px] opacity-60 font-normal ml-1">
-                        {skill.level}
-                      </span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        {/* Marquee rows */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-10"
+        >
+          <MarqueeRow items={languages}  direction="left"  speed={22} label="Languages" />
+          <MarqueeRow items={frameworks} direction="right" speed={26} label="Frameworks & Runtimes" />
+          <MarqueeRow items={tools}      direction="left"  speed={18} label="Tools & Platforms" />
+        </motion.div>
 
         {/* Legend */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 0.5 }}
           className="flex flex-wrap gap-6 justify-center mt-12 text-xs text-muted-foreground"
         >
           {(['Expert', 'Proficient', 'Learning'] as const).map((level) => (
