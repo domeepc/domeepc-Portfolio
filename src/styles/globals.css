@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 240 10% 4%;
+    --foreground: 240 10% 95%;
+    --card: 240 10% 7%;
+    --card-foreground: 240 10% 95%;
+    --popover: 240 10% 7%;
+    --popover-foreground: 240 10% 95%;
+    --primary: 263 70% 58%;
+    --primary-foreground: 240 10% 95%;
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 240 10% 80%;
+    --muted: 240 10% 12%;
+    --muted-foreground: 240 10% 55%;
+    --accent: 263 50% 25%;
+    --accent-foreground: 263 80% 75%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 10% 16%;
+    --input: 240 10% 16%;
+    --ring: 263 70% 58%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #7c3aed, #6d28d9, #a78bfa);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease infinite;
+}
+
+.glow-border {
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.1);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.glow-border:hover {
+  border-color: rgba(124, 58, 237, 0.6);
+  box-shadow: 0 0 30px rgba(124, 58, 237, 0.25);
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(124, 58, 237, 0.4);
+  animation: float var(--duration, 6s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}

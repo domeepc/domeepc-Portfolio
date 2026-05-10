@@ -1,0 +1,213 @@
+---
+alwaysApply: false
+---
+# Cursor Rule Authoring Standard
+
+> Every new `.mdc` rule file must follow this standard. When creating or editing a rule, read this file first.
+
+---
+
+## Rule File Structure
+
+Every `.mdc` file must have exactly this structure, in this order:
+
+```
+---
+description: <one concise sentence — what this rule governs>
+globs: <file patterns this rule activates on>
+alwaysApply: <true | false>
+---
+
+# <Rule Title>
+
+## <Section>
+...
+```
+
+### Frontmatter Fields
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `description` | ✅ | One sentence. No period at end. Used by Cursor to decide when to load the rule |
+| `globs` | ✅ | Comma-separated glob patterns. Use `**/*` only for truly universal rules |
+| `alwaysApply` | ✅ | `true` only for cross-cutting rules (security, DRY/KISS/YAGNI, git). Default `false` |
+
+### `alwaysApply` Decision
+
+```
+Does this rule apply regardless of file type or feature?
+├── YES (e.g. security, code principles, git) → alwaysApply: true
+└── NO (e.g. C rules, React rules, SQL rules) → alwaysApply: false
+    └── Set precise globs so the rule only loads when relevant
+```
+
+---
+
+## Naming Conventions
+
+- File names: `kebab-case.mdc`
+- Be specific: `nextjs-shadcn-components.mdc` not `frontend.mdc`
+- Group by concern, not by tool: `rest-api-design.mdc` not `express-routes.mdc`
+- Names must be self-explanatory without reading the file
+
+### Existing Rules in This Project
+
+| File | Scope | alwaysApply |
+|------|-------|-------------|
+| `self-improve.mdc` | AI behaviour | true |
+| `dry-kiss-yagni.mdc` | All code | true |
+| `oop-best-practices.mdc` | `.java .cpp .cs .py .hpp` | false |
+| `c-best-practices.mdc` | `.c .h` | false |
+| `react-shadcn-typescript.mdc` | `.tsx .ts` | false |
+| `nextjs-shadcn-components.mdc` | `.tsx .ts app/ components/` | false |
+| `rule-authoring.mdc` | `.mdc` | false |
+
+**Update this table every time a new rule is added.**
+
+---
+
+## Cooperation Between Rules — The Most Important Section
+
+Rules must be aware of each other. Before writing a new rule:
+
+### Step 1 — Check for Overlap
+Read every existing rule that shares globs with your new rule. Ask:
+- Does an existing rule already cover this topic?
+- Would my new rule contradict an existing rule?
+- Could I add a section to an existing rule instead of creating a new file?
+
+### Step 2 — Resolve Conflicts Explicitly
+If two rules touch the same topic, one must **defer to the other**. Use this pattern at the top of the relevant section:
+
+```md
+> This section works alongside `oop-best-practices.mdc`.
+> For class design rules, see that file. This file covers React-specific patterns only.
+```
+
+### Step 3 — Cross-Reference, Don't Duplicate
+If another rule covers something relevant, **link it** rather than restating it:
+
+```md
+> Error handling patterns follow `node-express-nestjs.mdc § Error Handling`.
+> This rule does not redefine them.
+```
+
+### Step 4 — Layer Rules Correctly
+
+Rules form a hierarchy. Lower layers defer to higher ones:
+
+```
+Level 1 — Universal (alwaysApply: true)
+  self-improve.mdc
+  dry-kiss-yagni.mdc
+
+Level 2 — Language (activates on file extension)
+  oop-best-practices.mdc     → .java .cs .cpp .py
+  c-best-practices.mdc       → .c .h
+
+Level 3 — Framework (activates on extension + folder pattern)
+  react-shadcn-typescript.mdc   → .tsx .ts
+  nextjs-shadcn-components.mdc  → .tsx .ts + app/ components/
+
+Level 4 — Workflow (activates on specific file types or always)
+  rule-authoring.mdc         → .mdc
+```
+
+**A Level 3 rule never redefines what Level 1 already mandates.**
+If DRY/KISS/YAGNI covers it, your framework rule must not repeat it — reference it instead.
+
+---
+
+## Writing Quality Rules
+
+### Section Structure
+Each section should follow this pattern:
+1. **One-line principle** — the rule in plain English
+2. **Why** — one sentence on the consequence of ignoring it (optional for obvious rules)
+3. **How** — concrete implementation guidance
+4. **Examples** — code blocks showing ✅ correct and ❌ wrong (for non-obvious rules)
+
+### Writing Style
+- Use **imperative mood**: "Extract shared logic" not "You should extract shared logic"
+- Be **specific and measurable**: "≤ 3 levels of nesting" not "avoid deep nesting"
+- Prefer **tables and checklists** over long prose for reference material
+- Keep each rule file **focused** — if it covers more than 2 concerns, split it
+- Rules are for Cursor AI, not humans — write for precision, not eloquence
+
+### Code Examples
+- Every non-obvious rule must have a code example
+- Show both ✅ and ❌ where the wrong approach is tempting
+- Use the actual project's language/framework in examples (TypeScript for frontend rules, Python for backend, etc.)
+- Keep examples **minimal** — illustrate one concept per block
+
+### Length Guidelines
+| Rule type | Target length |
+|-----------|--------------|
+| Universal / principle rules | 200–400 lines |
+| Language rules | 150–300 lines |
+| Framework rules | 100–250 lines |
+| Workflow rules | 80–150 lines |
+
+Longer is not better. A rule Cursor ignores because it is too long is worse than no rule.
+
+---
+
+## Checklist — Before Saving a New Rule
+
+### Structure
+- [ ] Frontmatter has `description`, `globs`, and `alwaysApply`
+- [ ] `description` is one sentence and accurately describes the scope
+- [ ] `globs` are as specific as possible — not `**/*` unless truly universal
+- [ ] `alwaysApply: true` is justified (cross-cutting concern)
+- [ ] File is named in `kebab-case.mdc`
+
+### Cooperation
+- [ ] I read every existing rule that shares my globs
+- [ ] My rule does not contradict any existing rule
+- [ ] My rule does not duplicate content already in another rule
+- [ ] Where overlap exists, I reference the other rule explicitly
+- [ ] The table in `rule-authoring.mdc § Existing Rules` is updated
+
+### Content
+- [ ] Each section has a clear, measurable directive
+- [ ] Non-obvious rules have ✅ / ❌ code examples
+- [ ] No section restates a Level 1 rule (DRY/KISS/YAGNI, self-improve) — it references it
+- [ ] The rule fits its layer (Universal → Language → Framework → Workflow)
+
+### Maintenance
+- [ ] Rule is scoped tightly enough that it won't need editing for unrelated reasons
+- [ ] If this rule obsoletes part of another rule, that other rule is updated
+
+---
+
+## When to Create vs. Extend vs. Delete
+
+### Create a new rule when
+- A new language, framework, or tool is added to the project
+- A recurring review comment has no rule backing it
+- A new workflow concern (testing strategy, deployment, API design) is established
+
+### Extend an existing rule when
+- The new content belongs to the same concern and same glob pattern
+- The existing file is under the target length
+- The new section cooperates naturally with existing sections
+
+### Delete or merge a rule when
+- A framework is removed from the project
+- Two rules have significant overlap and one can absorb the other cleanly
+- A rule has not been referenced or triggered in a long time (YAGNI)
+
+---
+
+## Anti-Patterns
+
+| ❌ Anti-pattern | ✅ Correct approach |
+|----------------|---------------------|
+| `alwaysApply: true` on a framework-specific rule | Set precise globs; `alwaysApply: false` |
+| Restating DRY/KISS/YAGNI rules in a framework rule | Add `> See dry-kiss-yagni.mdc` reference |
+| Two rules with contradicting naming conventions | One rule wins; the other defers explicitly |
+| A rule file covering 5 unrelated concerns | Split into focused, single-concern files |
+| Glob `**/*` on a language-specific rule | Use `**/*.ts, **/*.tsx` etc. |
+| No code examples in a non-obvious rule | Add ✅ / ❌ examples for every key directive |
+| Creating a rule for a one-off case | Inline the guidance as a comment instead |
+| Forgetting to update the Existing Rules table | Always update it — it is the rule registry |
