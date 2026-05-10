@@ -39,7 +39,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
           className="flex items-center gap-2 font-bold text-foreground hover:text-violet-400 transition-colors"
         >
           <div className="p-1 rounded-md bg-violet-500/15 border border-violet-500/25">
-            <img src={`${baseUrl}dm-logo.svg`} alt="DM logo" width={16} height={16} className="w-6 h-6" />
+            <img src={`${baseUrl}/dm-logo.svg`} alt="DM logo" width={16} height={16} className="w-6 h-6" />
           </div>
           <span className="text-sm font-semibold">{profile.handle}</span>
         </a>
