@@ -50,64 +50,53 @@ function TimelineCard({
   const config = typeConfig[entry.type];
   const Icon = config.icon;
 
-  // Card 0 is already visible when the line starts drawing (at 0.1).
-  // Cards 1..N-1 each reveal during their own scroll slice.
   const sliceSize = 0.85 / N;
   const start = index === 0 ? 0.08 : 0.1 + index * sliceSize;
-  const end = index === 0 ? 0.1 : 0.1 + index * sliceSize + sliceSize * 0.5;
+  const end   = index === 0 ? 0.1  : 0.1 + index * sliceSize + sliceSize * 0.5;
 
   const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-  const y = useTransform(scrollYProgress, [start, end], [50, 0]);
-  const scale = useTransform(scrollYProgress, [start, end], [0.95, 1]);
+  const y       = useTransform(scrollYProgress, [start, end], [50, 0]);
+  const scale   = useTransform(scrollYProgress, [start, end], [0.95, 1]);
 
   return (
-    <motion.div
-      style={{ opacity, y, scale }}
-      className="relative flex gap-6 pl-4"
-    >
+    <motion.div style={{ opacity, y, scale }} className="relative flex gap-4 md:gap-6 pl-2 md:pl-4">
       {/* Icon node */}
       <div className="relative z-10 shrink-0">
-        <div
-          className={`w-8 h-8 rounded-full border flex items-center justify-center z-10 ${config.bg}`}
-        >
-          <Icon size={14} className={config.color} />
+        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
+          <Icon size={12} className={config.color} />
         </div>
       </div>
 
       {/* Content card */}
-      <div className="flex-1 pb-2">
-        <div className="p-5 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-            <div className="flex items-center gap-2">
+      <div className="flex-1 pb-2 min-w-0">
+        <div className="p-3 md:p-5 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
+          <div className="flex flex-wrap items-start justify-between gap-1.5 md:gap-2 mb-1.5 md:mb-2">
+            <div className="flex flex-wrap items-center gap-1.5 md:gap-2 min-w-0">
               {entry.website && (
-                <a
-                  href={entry.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Globe size={14} className="text-violet-400" />
+                <a href={entry.website} target="_blank" rel="noopener noreferrer">
+                  <Globe size={12} className="text-violet-400 shrink-0" />
                 </a>
               )}
-              <h3 className="font-semibold text-foreground text-base">
+              <h3 className="font-semibold text-foreground text-xs md:text-base leading-snug">
                 {entry.title}
               </h3>
-              <p className="text-sm text-violet-400/80 font-medium">
+              <p className="text-[11px] md:text-sm text-violet-400/80 font-medium">
                 {entry.institution}
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
               {entry.current && (
-                <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="flex items-center gap-1 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
+                  <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-400 animate-pulse" />
                   Current
                 </span>
               )}
-              <span className="text-xs text-muted-foreground font-medium">
+              <span className="text-[10px] md:text-xs text-muted-foreground font-medium">
                 {entry.year}
               </span>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
             {entry.description}
           </p>
         </div>
@@ -117,7 +106,6 @@ function TimelineCard({
 }
 
 export default function Timeline() {
-  // Outer ref drives the scroll progress — tall enough so each card gets its own scroll segment
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -131,54 +119,49 @@ export default function Timeline() {
     restDelta: 0.001,
   });
 
-  // Entry animation: section zooms forward as it enters (first 10% of scroll)
-  const scale = useTransform(smoothProgress, [0, 0.1], [0.92, 1]);
-  const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
-
-  // Progressive line: grows from "0%" to "100%" as scroll goes from 10% to 95%
-  const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "100%"]);
+  const scale      = useTransform(smoothProgress, [0, 0.1],    [0.92, 1]);
+  const opacity    = useTransform(smoothProgress, [0, 0.08],   [0, 1]);
+  const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
 
   return (
-    // Outer: tall scroll canvas — 80vh per card gives a snappier pace
+    // Mobile: 60vh per card. Desktop: 80vh per card.
     <div
       id="experience"
       ref={sectionRef}
-      style={{ minHeight: `${N * 80 + 100}vh` }}
       className="relative"
+      style={{ minHeight: `${N * 60 + 80}vh` }}
     >
-      {/* Sticky inner: pins to viewport while outer scrolls */}
       <div className="sticky top-0 h-screen flex items-center justify-center">
-        {/* Background accent */}
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
 
         <motion.div
           style={{ scale, opacity }}
-          className="w-full max-w-3xl mx-auto px-6"
+          className="w-full max-w-3xl mx-auto px-4 md:px-6"
         >
-          {/* Section header */}
-          <div className="text-center mb-12">
-            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
+          {/* Header */}
+          <div className="text-center mb-6 md:mb-12">
+            <p className="text-violet-400 text-xs md:text-sm font-semibold tracking-widest uppercase mb-2 md:mb-3">
               Journey
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold">
+            <h2 className="text-2xl md:text-4xl font-bold">
               Education & <span className="gradient-text">Experience</span>
             </h2>
-            <p className="text-muted-foreground mt-4 max-w-md mx-auto">
+            <p className="text-muted-foreground mt-2 md:mt-4 text-xs md:text-base max-w-md mx-auto">
               My path from first lines of code to production deployments.
             </p>
           </div>
 
-          {/* Timeline list */}
+          {/* Timeline */}
           <div className="relative">
-            {/* Progressive vertical line */}
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-border">
+            {/* Glowing line */}
+            <div className="absolute left-5 md:left-8 top-0 bottom-0 w-px bg-border">
               <motion.div
-                className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-500 to-violet-800"
+                className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
                 style={{ height: lineHeight }}
               />
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-3 md:space-y-6">
               {timeline.map((entry, i) => (
                 <TimelineCard
                   key={`${entry.year}-${entry.title}`}
