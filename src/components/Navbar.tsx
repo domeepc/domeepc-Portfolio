@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { profile } from '@/lib/data';
+import { scrollToHash } from '@/lib/smoothScroll';
 
 const navLinks = [
   { href: '#about', label: 'About' },
@@ -10,6 +11,13 @@ const navLinks = [
   { href: '#experience', label: 'Experience' },
   { href: '#contact', label: 'Contact' },
 ];
+
+function handleNav(e: React.MouseEvent<HTMLAnchorElement>) {
+  const hash = new URL(e.currentTarget.href).hash;
+  if (!hash) return;
+  e.preventDefault();
+  scrollToHash(hash);
+}
 
 export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
   const [scrolled, setScrolled] = useState(false);
@@ -36,6 +44,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
         {/* Logo */}
         <a
           href="#home"
+          onClick={handleNav}
           className="flex items-center gap-2 font-bold text-foreground hover:text-violet-400 transition-colors"
         >
           <div className="p-1 rounded-md bg-violet-500/15 border border-violet-500/25">
@@ -50,6 +59,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
             <a
               key={link.href}
               href={link.href}
+              onClick={handleNav}
               className="text-sm text-muted-foreground hover:text-violet-400 transition-colors font-medium"
             >
               {link.label}
@@ -82,8 +92,8 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
                 <a
                   key={link.href}
                   href={link.href}
+                  onClick={(e) => { handleNav(e); setMenuOpen(false); }}
                   className="text-sm text-muted-foreground hover:text-violet-400 transition-colors font-medium py-1"
-                  onClick={() => setMenuOpen(false)}
                 >
                   {link.label}
                 </a>

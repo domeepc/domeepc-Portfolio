@@ -1,5 +1,6 @@
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect } from "react";
+import { scrollToHash } from "@/lib/smoothScroll";
 import { ArrowDown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { profile } from "@/lib/data";
@@ -187,6 +188,7 @@ export default function Hero() {
         >
           <a
             href="#about"
+            onClick={(e) => { e.preventDefault(); scrollToHash('#about'); }}
             className="flex flex-col items-center gap-2 text-muted-foreground hover:text-violet-400 transition-colors"
           >
             <span className="text-xs font-medium tracking-widest uppercase">
