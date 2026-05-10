@@ -66,6 +66,8 @@ export const skills: Skill[] = [
   { name: 'Git', level: 'Proficient', category: 'Tool' },
   { name: 'GitHub', level: 'Proficient', category: 'Tool' },
   { name: 'Linux', level: 'Learning', category: 'Tool' },
+  {name: 'Java', level: 'Proficient', category: 'Language'},
+  {name: 'Spring Boot', level: 'Learning', category: 'Framework'}
 ];
 
 export type TimelineEntry = {

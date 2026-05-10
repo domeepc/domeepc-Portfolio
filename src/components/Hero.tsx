@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { useEffect } from "react";
 import { ArrowDown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { profile } from "@/lib/data";
@@ -10,9 +11,30 @@ const particles = Array.from({ length: 12 }, (_, i) => ({
   top: `${Math.random() * 100}%`,
   duration: `${Math.random() * 4 + 4}s`,
   delay: `${Math.random() * 3}s`,
+  depth: Math.random() * 0.8 + 0.2,
 }));
 
 export default function Hero() {
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+
+  const springX = useSpring(rawX, { stiffness: 60, damping: 20 });
+  const springY = useSpring(rawY, { stiffness: 60, damping: 20 });
+
+  const glowX = useTransform(springX, [-0.5, 0.5], ["-6%", "6%"]);
+  const glowY = useTransform(springY, [-0.5, 0.5], ["-6%", "6%"]);
+  const gridX = useTransform(springX, [-0.5, 0.5], ["-2%", "2%"]);
+  const gridY = useTransform(springY, [-0.5, 0.5], ["-2%", "2%"]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      rawX.set(e.clientX / window.innerWidth - 0.5);
+      rawY.set(e.clientY / window.innerHeight - 0.5);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [rawX, rawY]);
+
   return (
     <section
       id="home"
@@ -21,36 +43,47 @@ export default function Hero() {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-linear-to-br from-[#0a0a0f] via-[#0f0a1e] to-[#0a0a0f]" />
 
-      {/* Radial glow */}
-      <div className="absolute inset-0 flex items-center justify-center">
+      {/* Radial glow — slow parallax */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ x: glowX, y: glowY }}
+      >
         <div className="w-[600px] h-[600px] rounded-full bg-violet-900/20 blur-[120px]" />
-      </div>
+      </motion.div>
 
-      {/* Floating particles */}
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="particle absolute"
-          style={
-            {
-              width: p.size,
-              height: p.size,
-              left: p.left,
-              top: p.top,
-              "--duration": p.duration,
-              "--delay": p.delay,
-            } as React.CSSProperties
-          }
-        />
-      ))}
+      {/* Floating particles — per-particle depth parallax */}
+      {particles.map((p) => {
+        const px = useTransform(springX, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
+        const py = useTransform(springY, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
+        return (
+          <motion.div
+            key={p.id}
+            className="particle absolute pointer-events-none"
+            style={
+              {
+                width: p.size,
+                height: p.size,
+                left: p.left,
+                top: p.top,
+                "--duration": p.duration,
+                "--delay": p.delay,
+                x: px,
+                y: py,
+              } as React.CSSProperties
+            }
+          />
+        );
+      })}
 
-      {/* Grid overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
+      {/* Grid overlay — very subtle parallax */}
+      <motion.div
+        className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage: `linear-gradient(rgba(167,139,250,1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(167,139,250,1) 1px, transparent 1px)`,
           backgroundSize: "60px 60px",
+          x: gridX,
+          y: gridY,
         }}
       />
 
