@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Code2 } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { profile } from '@/lib/data';
 
 const navLinks = [
@@ -38,8 +38,8 @@ export default function Navbar() {
           href="#home"
           className="flex items-center gap-2 font-bold text-foreground hover:text-violet-400 transition-colors"
         >
-          <div className="p-1.5 rounded-md bg-violet-500/15 border border-violet-500/25">
-            <Code2 size={16} className="text-violet-400" />
+          <div className="p-1 rounded-md bg-violet-500/15 border border-violet-500/25">
+            <img src="/dm-logo.svg" alt="DM logo" width={16} height={16} className="w-6 h-6" />
           </div>
           <span className="text-sm font-semibold">{profile.handle}</span>
         </a>
