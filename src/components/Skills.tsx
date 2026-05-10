@@ -18,7 +18,7 @@ const levelDot = {
 function SkillPill({ skill }: { skill: Skill }) {
   return (
     <div
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-medium text-sm cursor-default shrink-0 ${levelColors[skill.level]}`}
+      className={`flex items-center gap-2 px-4 py-2 mx-2 rounded-lg border font-medium text-sm cursor-default shrink-0 ${levelColors[skill.level]}`}
     >
       <span className={`w-2 h-2 rounded-full ${levelDot[skill.level]}`} />
       {skill.name}
@@ -60,14 +60,11 @@ function MarqueeRow({
         }}
       >
         <div
-          className="marquee-track flex gap-3 w-max"
+          className="marquee-track flex w-max"
           style={{
             animationName: 'marquee-scroll',
             animationDuration: `${speed}s`,
-            animationDirection: 'normal',
-            // Offset rightward rows by half the duration so they appear
-            // mid-cycle — visually scrolling the opposite way with no snap.
-            animationDelay: direction === 'right' ? `-${speed / 2}s` : '0s',
+            animationDirection: direction === 'right' ? 'reverse' : 'normal',
           }}
         >
           {doubled.map((skill, i) => (
