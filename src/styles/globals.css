@@ -28,13 +28,17 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
-    cursor: none !important;
+  }
+
+  @media (pointer: fine) {
+    * {
+      cursor: none !important;
+    }
   }
 
   html {
     /* scroll-behavior handled via JS for spring easing */
     scroll-behavior: auto;
-    overflow-x: hidden;
   }
 
   body {

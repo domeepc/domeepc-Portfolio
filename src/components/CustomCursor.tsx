@@ -64,7 +64,7 @@ export default function CustomCursor() {
     <>
       {/* Outer ring — springs behind the cursor */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block"
         style={{
           x: ringX,
           y: ringY,
@@ -79,7 +79,7 @@ export default function CustomCursor() {
 
       {/* Inner dot — snaps instantly to cursor */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999]"
+        className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block"
         style={{
           x: dotX,
           y: dotY,

@@ -147,7 +147,7 @@ export default function Timeline() {
       className="relative"
     >
       {/* Sticky inner: pins to viewport while outer scrolls */}
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+      <div className="sticky top-0 h-screen flex items-center justify-center">
         {/* Background accent */}
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
 
