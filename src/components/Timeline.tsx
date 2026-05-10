@@ -62,41 +62,41 @@ function TimelineCard({
     <motion.div style={{ opacity, y, scale }} className="relative flex gap-4 md:gap-6 pl-2 md:pl-4">
       {/* Icon node */}
       <div className="relative z-10 shrink-0">
-        <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
-          <Icon size={12} className={config.color} />
+        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
+          <Icon size={14} className={config.color} />
         </div>
       </div>
 
       {/* Content card */}
-      <div className="flex-1 pb-2 min-w-0">
-        <div className="p-3 md:p-5 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
-          <div className="flex flex-wrap items-start justify-between gap-1.5 md:gap-2 mb-1.5 md:mb-2">
-            <div className="flex flex-wrap items-center gap-1.5 md:gap-2 min-w-0">
+      <div className="flex-1 pb-2 px-4 min-w-0">
+        <div className="p-4 md:p-5 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
               {entry.website && (
                 <a href={entry.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={12} className="text-violet-400 shrink-0" />
+                  <Globe size={13} className="text-violet-400 shrink-0" />
                 </a>
               )}
-              <h3 className="font-semibold text-foreground text-xs md:text-base leading-snug">
+              <h3 className="font-semibold text-foreground text-sm md:text-base leading-snug">
                 {entry.title}
               </h3>
-              <p className="text-[11px] md:text-sm text-violet-400/80 font-medium">
+              <p className="text-sm text-violet-400/80 font-medium">
                 {entry.institution}
               </p>
             </div>
-            <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               {entry.current && (
-                <span className="flex items-center gap-1 text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
-                  <span className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   Current
                 </span>
               )}
-              <span className="text-[10px] md:text-xs text-muted-foreground font-medium">
+              <span className="text-xs text-muted-foreground font-medium">
                 {entry.year}
               </span>
             </div>
           </div>
-          <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {entry.description}
           </p>
         </div>
@@ -131,7 +131,7 @@ export default function Timeline() {
       className="relative"
       style={{ minHeight: `${N * 60 + 80}vh` }}
     >
-      <div className="sticky top-0 h-screen flex items-center justify-center">
+      <div className="sticky mb-64 md:mb-0 top-1/2 md:top-0 h-screen flex items-center justify-center">
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
 
         <motion.div
@@ -139,14 +139,14 @@ export default function Timeline() {
           className="w-full max-w-3xl mx-auto px-4 md:px-6"
         >
           {/* Header */}
-          <div className="text-center mb-6 md:mb-12">
-            <p className="text-violet-400 text-xs md:text-sm font-semibold tracking-widest uppercase mb-2 md:mb-3">
+          <div className="text-center mb-12">
+            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-2 md:mb-3">
               Journey
             </p>
-            <h2 className="text-2xl md:text-4xl font-bold">
+            <h2 className="text-4xl font-bold">
               Education & <span className="gradient-text">Experience</span>
             </h2>
-            <p className="text-muted-foreground mt-2 md:mt-4 text-xs md:text-base max-w-md mx-auto">
+            <p className="text-muted-foreground mt-2 md:mt-4 text-base max-w-md mx-auto">
               My path from first lines of code to production deployments.
             </p>
           </div>
@@ -154,7 +154,7 @@ export default function Timeline() {
           {/* Timeline */}
           <div className="relative">
             {/* Glowing line */}
-            <div className="absolute left-5 md:left-8 top-0 bottom-0 w-px bg-border">
+            <div className="absolute left-6 md:left-8 top-0 bottom-0 w-px bg-border">
               <motion.div
                 className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
                 style={{ height: lineHeight }}

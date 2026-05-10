@@ -50,7 +50,7 @@ export default function Contact() {
   return (
     <footer id="contact" className="py-24 px-6 relative">
       {/* Top glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
+      <div className="absolute top-18 md:top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
 
       <div className="max-w-3xl mx-auto text-center" ref={ref}>
         {/* Header */}
