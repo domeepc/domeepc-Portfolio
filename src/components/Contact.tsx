@@ -48,7 +48,8 @@ export default function Contact() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <footer id="contact" className="py-24 px-6 relative">
+    <footer id="contact" className="py-28 px-6 relative">
+      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
       {/* Top glow */}
       <div className="absolute top-18 md:top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
 

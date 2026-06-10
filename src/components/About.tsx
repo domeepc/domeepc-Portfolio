@@ -24,7 +24,8 @@ export default function About() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section id="about" className="py-24 px-6 relative overflow-x-hidden">
+    <section id="about" className="py-28 px-6 relative">
+      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
       <div className="max-w-5xl mx-auto" ref={ref}>
         {/* Section header */}
         <motion.div
@@ -36,7 +37,7 @@ export default function About() {
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             About Me
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Who I <span className="gradient-text">Am</span>
           </h2>
         </motion.div>

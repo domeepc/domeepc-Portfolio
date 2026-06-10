@@ -84,7 +84,8 @@ export default function Skills() {
   const tools      = skills.filter((s) => s.category === 'Tool');
 
   return (
-    <section id="skills" className="py-24 px-6 relative overflow-hidden">
+    <section id="skills" className="py-28 px-6 relative overflow-hidden">
+      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
       <div className="max-w-5xl mx-auto" ref={ref}>
         {/* Section header */}
         <motion.div
@@ -96,7 +97,7 @@ export default function Skills() {
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             Technical Skills
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             What I <span className="gradient-text">Work With</span>
           </h2>
           <p className="text-muted-foreground mt-4 max-w-md mx-auto">

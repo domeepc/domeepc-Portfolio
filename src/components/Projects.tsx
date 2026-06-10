@@ -10,7 +10,8 @@ export default function Projects() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section id="projects" className="py-24 px-6 relative">
+    <section id="projects" className="py-28 px-6 relative">
+      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
       <div className="max-w-6xl mx-auto" ref={ref}>
         {/* Section header */}
         <motion.div
