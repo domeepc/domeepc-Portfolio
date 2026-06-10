@@ -23,7 +23,7 @@ export default function About() {
   const { ref, isInView } = useScrollAnimation();
 
   return (
-    <section id="about" className="py-28 px-6 relative">
+    <section id="about" className="py-28 px-6 relative overflow-x-hidden">
       <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
       <div className="max-w-5xl mx-auto" ref={ref}>
         {/* Section header */}

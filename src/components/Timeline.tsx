@@ -200,7 +200,7 @@ export default function Timeline() {
 
   if (isMobile) {
     return (
-      <section id="experience" className="py-28 px-4 relative">
+      <section id="experience" className="py-16 px-6 relative overflow-x-hidden">
         <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
