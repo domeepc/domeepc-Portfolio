@@ -3,7 +3,6 @@ import {
   MapPin,
   GraduationCap,
   GitBranch,
-  Clapperboard,
   Workflow,
 } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
