@@ -171,7 +171,7 @@ function TimelineCard({
 
 export default function Timeline() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -195,8 +195,6 @@ export default function Timeline() {
   const scale = useTransform(smoothProgress, [0, 0.1], [0.92, 1]);
   const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
   const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
-
-  if (isMobile === null) return null;
 
   if (isMobile) {
     return (

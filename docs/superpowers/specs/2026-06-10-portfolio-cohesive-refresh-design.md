@@ -39,7 +39,7 @@ Improve mobile flow (full experience, properly adapted) and make the desktop ver
 
 ### Section backgrounds
 - All per-section `bg-background`, `bg-gradient-to-b`, and `via-violet-950/10` overlays removed or made `transparent`.
-- The Hero's `bg-linear-to-br from-[#0a0a0f]...` gradient is removed — the body background and blobs replace it.
+- The Hero's inner `<div className="absolute inset-0 bg-linear-to-br from-[#0a0a0f] via-[#0f0a1e] to-[#0a0a0f]" />` is removed — the body background and blobs replace it. The Hero's grid overlay (`opacity-[0.03]` grid lines) and floating particles remain as foreground decorative elements.
 - Skills section's `absolute inset-0 bg-gradient-to-b` pointer-events overlay removed.
 - Timeline section's `absolute inset-0 bg-linear-to-b` overlay removed.
 
