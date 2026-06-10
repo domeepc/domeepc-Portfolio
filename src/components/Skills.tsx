@@ -85,9 +85,6 @@ export default function Skills() {
 
   return (
     <section id="skills" className="py-24 px-6 relative overflow-hidden">
-      {/* Background accent */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
-
       <div className="max-w-5xl mx-auto" ref={ref}>
         {/* Section header */}
         <motion.div

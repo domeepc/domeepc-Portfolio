@@ -87,9 +87,6 @@ export default function Hero() {
       id="home"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-linear-to-br from-[#0a0a0f] via-[#0f0a1e] to-[#0a0a0f]" />
-
       {/* Radial glow — slow parallax */}
       <motion.div
         className="absolute inset-0 flex items-center justify-center pointer-events-none"

@@ -52,11 +52,11 @@ function TimelineCard({
 
   const sliceSize = 0.85 / N;
   const start = index === 0 ? 0.08 : 0.1 + index * sliceSize;
-  const end   = index === 0 ? 0.1  : 0.1 + index * sliceSize + sliceSize * 0.5;
+  const end = index === 0 ? 0.1 : 0.1 + index * sliceSize + sliceSize * 0.5;
 
   const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-  const y       = useTransform(scrollYProgress, [start, end], [50, 0]);
-  const scale   = useTransform(scrollYProgress, [start, end], [0.95, 1]);
+  const y = useTransform(scrollYProgress, [start, end], [50, 0]);
+  const scale = useTransform(scrollYProgress, [start, end], [0.95, 1]);
 
   return (
     <motion.div style={{ opacity, y, scale }} className="relative flex gap-2 md:gap-6 pl-0 md:pl-4">
@@ -120,8 +120,8 @@ export default function Timeline() {
     restDelta: 0.001,
   });
 
-  const scale      = useTransform(smoothProgress, [0, 0.1],    [0.92, 1]);
-  const opacity    = useTransform(smoothProgress, [0, 0.08],   [0, 1]);
+  const scale = useTransform(smoothProgress, [0, 0.1], [0.92, 1]);
+  const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
   const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
 
   return (
@@ -132,10 +132,7 @@ export default function Timeline() {
       className="relative"
       style={{ minHeight: `${N * 60 + 80}vh` }}
     >
-      <div className="sticky mb-64 md:mb-0 top-1/2 md:top-0 h-screen flex items-center justify-center">
-
-        <div className="absolute inset-0 bg-linear-to-b from-transparent via-violet-950/10 to-transparent pointer-events-none" />
-
+      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
         <motion.div
           style={{ scale, opacity }}
           className="w-full max-w-3xl mx-auto px-4 md:px-6"
