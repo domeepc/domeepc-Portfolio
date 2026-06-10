@@ -51,6 +51,8 @@
     color: hsl(var(--foreground));
     font-family: var(--font-outfit);
     -webkit-font-smoothing: antialiased;
+    background-image: radial-gradient(rgba(167, 139, 250, 0.12) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 
   h1, h2, h3, h4 {
