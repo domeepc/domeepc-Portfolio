@@ -47,7 +47,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
           scrolled
             ? 'bg-background/80 backdrop-blur-xl border-b border-violet-900/30 shadow-lg shadow-violet-900/20'
             : 'bg-transparent'
@@ -82,7 +82,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden relative z-[60] p-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="Toggle menu"
           >
