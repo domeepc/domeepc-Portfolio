@@ -36,7 +36,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-lg shadow-violet-900/10'
+          ? 'bg-background/80 backdrop-blur-xl border-b border-violet-900/30 shadow-lg shadow-violet-900/20'
           : 'bg-transparent'
       }`}
     >
@@ -69,7 +69,7 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
 
         {/* Mobile menu button */}
         <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="md:hidden relative z-50 p-2 text-muted-foreground hover:text-foreground transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Toggle menu"
         >
@@ -77,28 +77,26 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
         </button>
       </div>
 
-      {/* Mobile menu */}
+      {/* Mobile fullscreen overlay */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl"
+            className="md:hidden fixed inset-0 z-40 bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-center gap-8"
           >
-            <div className="px-6 py-4 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => { handleNav(e); setMenuOpen(false); }}
-                  className="text-sm text-muted-foreground hover:text-violet-400 transition-colors font-medium py-1"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => { handleNav(e); setMenuOpen(false); }}
+                className="text-2xl font-semibold font-syne text-muted-foreground hover:text-violet-400 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
