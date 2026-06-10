@@ -5,7 +5,7 @@ import {
   useSpring,
   MotionValue,
 } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
   FolderGit2,
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { timeline } from "@/lib/data";
 import type { TimelineEntry } from "@/lib/data";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const typeConfig: Record<
   TimelineEntry["type"],
@@ -37,6 +38,68 @@ const typeConfig: Record<
 };
 
 const N = timeline.length;
+
+function MobileTimelineCard({
+  entry,
+  index,
+}: {
+  entry: TimelineEntry;
+  index: number;
+}) {
+  const { ref, isInView } = useScrollAnimation();
+  const config = typeConfig[entry.type];
+  const Icon = config.icon;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="relative flex gap-4 pl-0"
+    >
+      <div className="relative z-10 shrink-0">
+        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
+          <Icon size={14} className={config.color} />
+        </div>
+      </div>
+
+      <div className="flex-1 min-w-0 pb-6">
+        <div className="p-4 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 min-w-0">
+              {entry.website && (
+                <a href={entry.website} target="_blank" rel="noopener noreferrer">
+                  <Globe size={12} className="text-violet-400 shrink-0" />
+                </a>
+              )}
+              <h3 className="font-semibold text-foreground text-sm leading-snug">
+                {entry.title}
+              </h3>
+              <p className="text-xs text-violet-400/80 font-medium">
+                {entry.institution}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {entry.current && (
+                <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  Current
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground font-medium">
+                {entry.year}
+              </span>
+            </div>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {entry.description}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 function TimelineCard({
   entry,
@@ -108,6 +171,15 @@ function TimelineCard({
 
 export default function Timeline() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -124,44 +196,73 @@ export default function Timeline() {
   const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
   const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
 
-  return (
-    // Mobile: 60vh per card. Desktop: 80vh per card.
-    <div
-      id="experience"
-      ref={sectionRef}
-      className="relative"
-      style={{ minHeight: `${N * 60 + 80}vh` }}
-    >
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-        <motion.div
-          style={{ scale, opacity }}
-          className="w-full max-w-3xl mx-auto px-4 md:px-6"
-        >
-          {/* Header */}
-
+  if (isMobile) {
+    return (
+      <section id="experience" className="py-28 px-4 relative">
+        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
+        <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-2 md:mb-3">
+            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
               Journey
             </p>
-            <h2 className="text-4xl font-bold">
+            <h2 className="text-3xl font-bold mb-4">
               Education & <span className="gradient-text">Experience</span>
             </h2>
-            <p className="text-muted-foreground mt-2 md:mt-4 text-base max-w-md mx-auto">
+            <p className="text-muted-foreground text-base max-w-md mx-auto">
               My path from first lines of code to production deployments.
             </p>
           </div>
 
-          {/* Timeline */}
           <div className="relative">
-            {/* Glowing line */}
-            <div className="absolute left-4 md:left-8 top-0 bottom-0 w-px bg-border">
+            <div className="absolute left-[15px] top-0 bottom-0 w-px bg-gradient-to-b from-violet-400 via-violet-600 to-transparent" />
+            <div className="space-y-0">
+              {timeline.map((entry, i) => (
+                <MobileTimelineCard
+                  key={`${entry.year}-${entry.title}`}
+                  entry={entry}
+                  index={i}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <div
+      id="experience"
+      ref={sectionRef}
+      className="relative"
+      style={{ minHeight: `${N * 80 + 80}vh` }}
+    >
+      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+        <motion.div
+          style={{ scale, opacity }}
+          className="w-full max-w-3xl mx-auto px-6"
+        >
+          <div className="text-center mb-12">
+            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
+              Journey
+            </p>
+            <h2 className="text-4xl font-bold mb-4">
+              Education & <span className="gradient-text">Experience</span>
+            </h2>
+            <p className="text-muted-foreground text-base max-w-md mx-auto">
+              My path from first lines of code to production deployments.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute left-8 top-0 bottom-0 w-px bg-border">
               <motion.div
                 className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
                 style={{ height: lineHeight }}
               />
             </div>
 
-            <div className="space-y-2 md:space-y-6">
+            <div className="space-y-6">
               {timeline.map((entry, i) => (
                 <TimelineCard
                   key={`${entry.year}-${entry.title}`}
