@@ -1,6 +1,6 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
 import { MapPin } from "lucide-react";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { profile } from "@/lib/data";
@@ -45,7 +45,22 @@ const links = [
 ];
 
 export default function Contact() {
-  const { ref, isInView } = useScrollAnimation();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: 'top 80%',
+        once: true,
+      },
+      defaults: { ease: 'power2.out' },
+    });
+
+    tl.from('.contact-header', { opacity: 0, y: 30, duration: 0.6 }, 0)
+      .from('.contact-links', { opacity: 0, y: 20, duration: 0.6 }, 0.15)
+      .from('.contact-footer', { opacity: 0, duration: 0.6 }, 0.3);
+  }, { scope: containerRef });
 
   return (
     <footer id="contact" className="py-28 px-6 relative">
@@ -53,14 +68,9 @@ export default function Contact() {
       {/* Top glow */}
       <div className="absolute top-18 md:top-0 left-1/2 -translate-x-1/2 w-96 h-px bg-linear-to-r from-transparent via-violet-500/40 to-transparent" />
 
-      <div className="max-w-3xl mx-auto text-center" ref={ref}>
+      <div className="max-w-3xl mx-auto text-center" ref={containerRef}>
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
+        <div className="contact-header mb-12">
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             Get In Touch
           </p>
@@ -75,15 +85,10 @@ export default function Contact() {
             <MapPin size={14} className="text-violet-400" />
             {profile.location}
           </div>
-        </motion.div>
+        </div>
 
         {/* Link cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.15 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-        >
+        <div className="contact-links flex flex-col sm:flex-row gap-4 justify-center mb-16">
           {links.map((link) => (
             <a
               key={link.label}
@@ -103,29 +108,24 @@ export default function Contact() {
               </div>
             </a>
           ))}
-        </motion.div>
+        </div>
 
         {/* Divider */}
         <Separator className="mb-8" />
 
         {/* Footer bottom */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground"
-        >
+        <div className="contact-footer flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>
             Built with <span className="text-violet-400">Astro</span> ·{" "}
             <span className="text-violet-400">React</span> ·{" "}
             <span className="text-violet-400">Tailwind</span> ·{" "}
-            <span className="text-violet-400">Framer Motion</span>
+            <span className="text-violet-400">GSAP</span>
           </p>
           <p>
             © {new Date().getFullYear()}{" "}
             <span className="text-foreground font-medium">{profile.name}</span>
           </p>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );
