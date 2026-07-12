@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useSpring, useTransform, MotionValue } from "framer-motion";
+import { useEffect, useState } from "react";
 import { scrollToHash } from "@/lib/smoothScroll";
 import { ArrowDown, Code2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { profile } from "@/lib/data";
-import { gsap, useGSAP } from "@/lib/gsap";
 
 interface Particle {
   id: number;
@@ -29,14 +29,17 @@ function makeParticles(): Particle[] {
 
 function ParticleNode({
   p,
-  setRef,
+  springX,
+  springY,
 }: {
   p: Particle;
-  setRef: (el: HTMLDivElement | null) => void;
+  springX: MotionValue<number>;
+  springY: MotionValue<number>;
 }) {
+  const px = useTransform(springX, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
+  const py = useTransform(springY, [-0.5, 0.5], [`${-p.depth * 30}px`, `${p.depth * 30}px`]);
   return (
-    <div
-      ref={setRef}
+    <motion.div
       className="particle absolute pointer-events-none"
       style={
         {
@@ -46,6 +49,8 @@ function ParticleNode({
           top: p.top,
           "--duration": p.duration,
           "--delay": p.delay,
+          x: px,
+          y: py,
         } as React.CSSProperties
       }
     />
@@ -54,128 +59,109 @@ function ParticleNode({
 
 export default function Hero() {
   const [particles, setParticles] = useState<Particle[]>([]);
-  const heroRef = useRef<HTMLElement>(null);
-  const glowRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const particleRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const particlesRef = useRef<Particle[]>([]);
-  const pointer = useRef({ x: 0, y: 0 });
+
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+
+  const springX = useSpring(rawX, { stiffness: 60, damping: 20 });
+  const springY = useSpring(rawY, { stiffness: 60, damping: 20 });
+
+  const glowX = useTransform(springX, [-0.5, 0.5], ["-6%", "6%"]);
+  const glowY = useTransform(springY, [-0.5, 0.5], ["-6%", "6%"]);
+  const gridX = useTransform(springX, [-0.5, 0.5], ["-2%", "2%"]);
+  const gridY = useTransform(springY, [-0.5, 0.5], ["-2%", "2%"]);
 
   useEffect(() => {
-    const p = makeParticles();
-    particlesRef.current = p;
-    setParticles(p);
-  }, []);
-
-  useGSAP(() => {
-    const applyParallax = () => {
-      const { x, y } = pointer.current;
-      gsap.set(glowRef.current, {
-        x: `${gsap.utils.mapRange(-0.5, 0.5, -6, 6, x)}%`,
-        y: `${gsap.utils.mapRange(-0.5, 0.5, -6, 6, y)}%`,
-      });
-      gsap.set(gridRef.current, {
-        x: `${gsap.utils.mapRange(-0.5, 0.5, -2, 2, x)}%`,
-        y: `${gsap.utils.mapRange(-0.5, 0.5, -2, 2, y)}%`,
-      });
-      particlesRef.current.forEach((p, i) => {
-        const el = particleRefs.current[i];
-        if (!el) return;
-        gsap.set(el, {
-          x: gsap.utils.mapRange(-0.5, 0.5, -p.depth * 30, p.depth * 30, x),
-          y: gsap.utils.mapRange(-0.5, 0.5, -p.depth * 30, p.depth * 30, y),
-        });
-      });
-    };
-
-    const setX = gsap.quickTo(pointer.current, "x", {
-      duration: 0.5,
-      ease: "power3.out",
-      onUpdate: applyParallax,
-    });
-    const setY = gsap.quickTo(pointer.current, "y", {
-      duration: 0.5,
-      ease: "power3.out",
-      onUpdate: applyParallax,
-    });
+    setParticles(makeParticles());
 
     const handleMouseMove = (e: MouseEvent) => {
-      setX(e.clientX / window.innerWidth - 0.5);
-      setY(e.clientY / window.innerHeight - 0.5);
+      rawX.set(e.clientX / window.innerWidth - 0.5);
+      rawY.set(e.clientY / window.innerHeight - 0.5);
     };
     window.addEventListener("mousemove", handleMouseMove);
-
-    const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-    tl.from(".hero-badge", { opacity: 0, y: 20, duration: 0.5 }, 0)
-      .from(".hero-name", { opacity: 0, y: 30, duration: 0.6 }, 0.1)
-      .from(".hero-title", { opacity: 0, y: 20, duration: 0.6 }, 0.2)
-      .from(".hero-location", { opacity: 0, y: 20, duration: 0.6 }, 0.3)
-      .from(".hero-cta", { opacity: 0, y: 20, duration: 0.6 }, 0.4)
-      .from(".hero-scroll", { opacity: 0, duration: 0.8, ease: "power1.out" }, 1);
-
-    gsap.to(".hero-scroll-arrow", {
-      y: 6,
-      duration: 0.75,
-      repeat: -1,
-      yoyo: true,
-      ease: "power1.inOut",
-    });
-
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, { scope: heroRef });
+  }, [rawX, rawY]);
 
   return (
     <section
       id="home"
-      ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
       {/* Radial glow — slow parallax */}
-      <div ref={glowRef} className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ x: glowX, y: glowY }}
+      >
         <div className="w-[600px] h-[600px] rounded-full bg-violet-900/20 blur-[120px]" />
-      </div>
+      </motion.div>
 
       {/* Floating particles — per-particle depth parallax */}
-      {particles.map((p, i) => (
-        <ParticleNode key={p.id} p={p} setRef={(el) => { particleRefs.current[i] = el; }} />
+      {particles.map((p) => (
+        <ParticleNode key={p.id} p={p} springX={springX} springY={springY} />
       ))}
 
       {/* Grid overlay — very subtle parallax */}
-      <div
-        ref={gridRef}
+      <motion.div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage: `linear-gradient(rgba(167,139,250,1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(167,139,250,1) 1px, transparent 1px)`,
           backgroundSize: "60px 60px",
+          x: gridX,
+          y: gridY,
         }}
       />
 
       <div className="flex flex-col items-center justify-center relative z-10 max-w-4xl mx-auto px-6 text-center">
         {/* Badge */}
-        <div className="hero-badge inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-sm font-medium mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-sm font-medium mb-8"
+        >
           <Code2 size={14} />
           Computer Engineer & Developer
-        </div>
+        </motion.div>
 
         {/* Name */}
-        <h1 className="hero-name text-5xl md:text-7xl font-bold tracking-tight mb-6">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
+        >
           Hi, I'm{" "}
           <span className="gradient-text">{profile.name.split(" ")[0]}</span>
-        </h1>
+        </motion.h1>
 
         {/* Title */}
-        <p className="hero-title text-xl md:text-2xl text-muted-foreground font-light mb-4">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl md:text-2xl text-muted-foreground font-light mb-4"
+        >
           {profile.title}
-        </p>
+        </motion.p>
 
         {/* Location */}
-        <p className="hero-location text-sm text-violet-400/70 mb-10">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="text-sm text-violet-400/70 mb-10"
+        >
           📍 {profile.location}
-        </p>
+        </motion.p>
 
         {/* CTA Buttons */}
-        <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+        >
           <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer">
             <Button
               size="lg"
@@ -215,10 +201,15 @@ export default function Hero() {
               LinkedIn
             </Button>
           </a>
-        </div>
+        </motion.div>
 
         {/* Scroll indicator */}
-        <div className="hero-scroll z-10 mt-10">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1 }}
+          className="z-10 mt-10"
+        >
           <a
             href="#about"
             onClick={(e) => { e.preventDefault(); scrollToHash('#about'); }}
@@ -227,11 +218,14 @@ export default function Hero() {
             <span className="text-xs font-medium tracking-widest uppercase">
               Scroll
             </span>
-            <div className="hero-scroll-arrow">
+            <motion.div
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
               <ArrowDown size={16} />
-            </div>
+            </motion.div>
           </a>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -1,43 +1,25 @@
-import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { ExternalLink, GitBranch, Globe } from 'lucide-react';
-import { gsap, useGSAP } from '@/lib/gsap';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { repos } from '@/lib/data';
 
-function onCardEnter(e: React.MouseEvent<HTMLDivElement>) {
-  gsap.to(e.currentTarget, { y: -6, duration: 0.2, ease: 'power2.out' });
-}
-
-function onCardLeave(e: React.MouseEvent<HTMLDivElement>) {
-  gsap.to(e.currentTarget, { y: 0, duration: 0.2, ease: 'power2.out' });
-}
-
 export default function Projects() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useGSAP(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top 80%',
-        once: true,
-      },
-      defaults: { ease: 'power2.out' },
-    });
-
-    tl.from('.projects-header', { opacity: 0, y: 30, duration: 0.6 }, 0)
-      .from('.project-card', { opacity: 0, y: 40, duration: 0.6, stagger: 0.1 }, 0)
-      .from('.projects-cta', { opacity: 0, y: 20, duration: 0.6 }, 0.7);
-  }, { scope: containerRef });
+  const { ref, isInView } = useScrollAnimation();
 
   return (
     <section id="projects" className="py-28 px-6 relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-      <div className="max-w-6xl mx-auto" ref={containerRef}>
+      <div className="max-w-6xl mx-auto" ref={ref}>
         {/* Section header */}
-        <div className="projects-header text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             Projects
           </p>
@@ -47,16 +29,18 @@ export default function Projects() {
           <p className="text-muted-foreground mt-4 max-w-md mx-auto">
             A selection of projects from web apps to embedded firmware — each one a new challenge.
           </p>
-        </div>
+        </motion.div>
 
         {/* Projects grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {repos.map((repo) => (
-            <div
+          {repos.map((repo, i) => (
+            <motion.div
               key={repo.name}
-              onMouseEnter={onCardEnter}
-              onMouseLeave={onCardLeave}
-              className="project-card group"
+              initial={{ opacity: 0, y: 40 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
+              whileHover={{ y: -6 }}
+              className="group"
             >
               <Card className="h-full flex flex-col bg-card border-border glow-border transition-all duration-300">
                 <CardHeader className="pb-3">
@@ -128,12 +112,17 @@ export default function Projects() {
                   )}
                 </CardContent>
               </Card>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* View all CTA */}
-        <div className="projects-cta text-center mt-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="text-center mt-12"
+        >
           <a
             href="https://github.com/domeepc?tab=repositories"
             target="_blank"
@@ -148,7 +137,7 @@ export default function Projects() {
               View All Repositories
             </Button>
           </a>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

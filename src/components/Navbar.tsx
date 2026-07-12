@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { profile } from '@/lib/data';
 import { scrollToHash } from '@/lib/smoothScroll';
-import { gsap, useGSAP } from '@/lib/gsap';
 
 const navLinks = [
   { href: '#about', label: 'About' },
@@ -22,8 +22,6 @@ function handleNav(e: React.MouseEvent<HTMLAnchorElement>) {
 export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const navRef = useRef<HTMLElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -43,24 +41,12 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [menuOpen]);
 
-  useGSAP(() => {
-    gsap.from(navRef.current, { opacity: 0, duration: 0.6, delay: 0.1, ease: 'power2.out' });
-  }, []);
-
-  useGSAP(() => {
-    gsap.to(menuRef.current, {
-      opacity: menuOpen ? 1 : 0,
-      scale: menuOpen ? 1 : 0.97,
-      duration: 0.2,
-      ease: 'power2.out',
-      pointerEvents: menuOpen ? 'auto' : 'none',
-    });
-  }, { dependencies: [menuOpen] });
-
   return (
     <>
-      <nav
-        ref={navRef}
+      <motion.nav
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
         className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${
           scrolled
             ? 'bg-background/80 backdrop-blur-xl border-b border-violet-900/30 shadow-lg shadow-violet-900/20'
@@ -103,25 +89,31 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* Mobile fullscreen overlay — always mounted, toggled via opacity/scale so fixed positioning is never affected by a CSS transform ancestor */}
-      <div
-        ref={menuRef}
-        aria-hidden={!menuOpen}
-        className="md:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-center gap-8 opacity-0 scale-[0.97] pointer-events-none"
-      >
-        {navLinks.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            onClick={(e) => { handleNav(e); setMenuOpen(false); }}
-            className="text-2xl font-semibold font-syne text-muted-foreground hover:text-violet-400 transition-colors"
+      {/* Mobile fullscreen overlay — outside nav so CSS transform doesn't break fixed positioning */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.97 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col items-center justify-center gap-8"
           >
-            {link.label}
-          </a>
-        ))}
-      </div>
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={(e) => { handleNav(e); setMenuOpen(false); }}
+                className="text-2xl font-semibold font-syne text-muted-foreground hover:text-violet-400 transition-colors"
+              >
+                {link.label}
+              </a>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
