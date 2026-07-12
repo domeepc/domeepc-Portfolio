@@ -1,11 +1,12 @@
-import { motion } from "framer-motion";
+// src/components/About.tsx
+import { useRef } from "react";
 import {
   MapPin,
   GraduationCap,
   GitBranch,
   Workflow,
 } from "lucide-react";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { gsap, useGSAP } from "@/lib/gsap";
 import { profile } from "@/lib/data";
 
 const highlights = [
@@ -20,35 +21,45 @@ const highlights = [
 ];
 
 export default function About() {
-  const { ref, isInView } = useScrollAnimation();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: containerRef.current,
+        start: "top 80%",
+        once: true,
+      },
+      defaults: { ease: "power2.out" },
+    });
+
+    tl.from(".about-header", { opacity: 0, y: 30, duration: 0.6 }, 0)
+      .from(".about-avatar", { opacity: 0, x: -40, duration: 0.7 }, 0.1)
+      .from(".about-text", { opacity: 0, x: 40, duration: 0.7 }, 0.2)
+      .from(
+        ".about-highlight",
+        { opacity: 0, y: 20, duration: 0.5, stagger: 0.1 },
+        0.3
+      );
+  }, { scope: containerRef });
 
   return (
     <section id="about" className="py-28 px-6 relative overflow-x-hidden">
       <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-      <div className="max-w-5xl mx-auto" ref={ref}>
+      <div className="max-w-5xl mx-auto" ref={containerRef}>
         {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="about-header text-center mb-16">
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             About Me
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Who I <span className="gradient-text">Am</span>
           </h2>
-        </motion.div>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
           {/* Avatar & decorative frame */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="flex justify-center"
-          >
+          <div className="about-avatar flex justify-center">
             <div className="relative">
               {/* Decorative rings */}
               <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 scale-110" />
@@ -62,15 +73,10 @@ export default function About() {
                 className="relative w-56 h-56 rounded-full object-cover border-2 border-violet-500/40 shadow-2xl shadow-violet-900/40"
               />
             </div>
-          </motion.div>
+          </div>
 
           {/* Text content */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="space-y-6"
-          >
+          <div className="about-text space-y-6">
             <p className="text-muted-foreground leading-relaxed text-base">
               {profile.bio}
             </p>
@@ -83,13 +89,10 @@ export default function About() {
 
             {/* Highlights grid */}
             <div className="grid grid-cols-2 gap-3 pt-2">
-              {highlights.map((item, i) => (
-                <motion.div
+              {highlights.map((item) => (
+                <div
                   key={item.label}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : {}}
-                  transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-violet-500/30 transition-colors"
+                  className="about-highlight flex items-center gap-3 p-3 rounded-lg bg-card border border-border hover:border-violet-500/30 transition-colors"
                 >
                   <div className="p-2 rounded-md bg-violet-500/10">
                     <item.icon size={16} className="text-violet-400" />
@@ -102,10 +105,10 @@ export default function About() {
                       {item.sub}
                     </p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
