@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { gsap, useGSAP } from '@/lib/gsap';
+import { motion } from 'framer-motion';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { skills } from '@/lib/data';
 import type { Skill } from '@/lib/data';
 
@@ -77,33 +77,23 @@ function MarqueeRow({
 }
 
 export default function Skills() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref, isInView } = useScrollAnimation();
 
   const languages  = skills.filter((s) => s.category === 'Language');
   const frameworks = skills.filter((s) => s.category === 'Framework');
   const tools      = skills.filter((s) => s.category === 'Tool');
 
-  useGSAP(() => {
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top 80%',
-        once: true,
-      },
-      defaults: { ease: 'power2.out' },
-    });
-
-    tl.from('.skills-header', { opacity: 0, y: 30, duration: 0.6 }, 0)
-      .from('.skills-marquee', { opacity: 0, duration: 0.6 }, 0.2)
-      .from('.skills-legend', { opacity: 0, duration: 0.6 }, 0.5);
-  }, { scope: containerRef });
-
   return (
     <section id="skills" className="py-28 px-6 relative overflow-hidden">
       <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-      <div className="max-w-5xl mx-auto" ref={containerRef}>
+      <div className="max-w-5xl mx-auto" ref={ref}>
         {/* Section header */}
-        <div className="skills-header text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
             Technical Skills
           </p>
@@ -113,24 +103,34 @@ export default function Skills() {
           <p className="text-muted-foreground mt-4 max-w-md mx-auto">
             From low-level C firmware to full-stack TypeScript — a look at my technical toolkit.
           </p>
-        </div>
+        </motion.div>
 
         {/* Marquee rows */}
-        <div className="skills-marquee space-y-10">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-10"
+        >
           <MarqueeRow items={languages}  direction="left"  speed={22} label="Languages" />
           <MarqueeRow items={frameworks} direction="right" speed={26} label="Frameworks & Runtimes" />
           <MarqueeRow items={tools}      direction="left"  speed={18} label="Tools & Platforms" />
-        </div>
+        </motion.div>
 
         {/* Legend */}
-        <div className="skills-legend flex flex-wrap gap-6 justify-center mt-12 text-xs text-muted-foreground">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className="flex flex-wrap gap-6 justify-center mt-12 text-xs text-muted-foreground"
+        >
           {(['Expert', 'Proficient', 'Learning'] as const).map((level) => (
             <div key={level} className="flex items-center gap-2">
               <span className={`w-2 h-2 rounded-full ${levelDot[level]}`} />
               {level}
             </div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

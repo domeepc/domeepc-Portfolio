@@ -1,3 +1,10 @@
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  MotionValue,
+} from "framer-motion";
 import { useRef, useState, useEffect } from "react";
 import {
   GraduationCap,
@@ -7,7 +14,7 @@ import {
 } from "lucide-react";
 import { timeline } from "@/lib/data";
 import type { TimelineEntry } from "@/lib/data";
-import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const typeConfig: Record<
   TimelineEntry["type"],
@@ -39,27 +46,18 @@ function MobileTimelineCard({
   entry: TimelineEntry;
   index: number;
 }) {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const { ref, isInView } = useScrollAnimation();
   const config = typeConfig[entry.type];
   const Icon = config.icon;
 
-  useGSAP(() => {
-    gsap.from(cardRef.current, {
-      opacity: 0,
-      y: 30,
-      duration: 0.5,
-      delay: index * 0.05,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: cardRef.current,
-        start: "top 85%",
-        once: true,
-      },
-    });
-  }, { scope: cardRef });
-
   return (
-    <div ref={cardRef} className="relative flex gap-4 pl-0">
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="relative flex gap-4 pl-0"
+    >
       <div className="relative z-10 shrink-0">
         <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
           <Icon size={14} className={config.color} />
@@ -99,24 +97,35 @@ function MobileTimelineCard({
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function TimelineCard({
   entry,
-  setRef,
+  index,
+  scrollYProgress,
 }: {
   entry: TimelineEntry;
-  setRef: (el: HTMLDivElement | null) => void;
+  index: number;
+  scrollYProgress: MotionValue<number>;
 }) {
   const config = typeConfig[entry.type];
   const Icon = config.icon;
 
+  const sliceSize = 0.85 / N;
+  const start = index === 0 ? 0.08 : 0.1 + index * sliceSize;
+  const end = index === 0 ? 0.1 : 0.1 + index * sliceSize + sliceSize * 0.5;
+
+  const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
+  const y = useTransform(scrollYProgress, [start, end], [50, 0]);
+  const scale = useTransform(scrollYProgress, [start, end], [0.95, 1]);
+
   return (
-    <div ref={setRef} className="relative flex gap-2 md:gap-6 pl-0 md:pl-4">
+    <motion.div style={{ opacity, y, scale }} className="relative flex gap-2 md:gap-6 pl-0 md:pl-4">
       {/* Icon node */}
       <div className="relative z-10 shrink-0">
+
         <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
           <Icon size={14} className={config.color} />
         </div>
@@ -156,15 +165,12 @@ function TimelineCard({
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export default function Timeline() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const lineRef = useRef<HTMLDivElement>(null);
-  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -175,44 +181,20 @@ export default function Timeline() {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  useGSAP(() => {
-    if (isMobile || !sectionRef.current) return;
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
 
-    const st = ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 1,
-      onUpdate: (self) => {
-        const p = self.progress;
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 200,
+    damping: 40,
+    restDelta: 0.001,
+  });
 
-        const scaleT = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0, 0.1, 0, 1, p));
-        const opacityT = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0, 0.08, 0, 1, p));
-        gsap.set(wrapperRef.current, {
-          scale: 0.92 + 0.08 * scaleT,
-          opacity: opacityT,
-        });
-
-        const lineT = gsap.utils.clamp(0, 1, gsap.utils.mapRange(0.1, 0.95, 0, 1, p));
-        gsap.set(lineRef.current, { height: `${85 * lineT}%` });
-
-        cardRefs.current.forEach((el, i) => {
-          if (!el) return;
-          const sliceSize = 0.85 / N;
-          const start = i === 0 ? 0.08 : 0.1 + i * sliceSize;
-          const end = i === 0 ? 0.1 : 0.1 + i * sliceSize + sliceSize * 0.5;
-          const t = gsap.utils.clamp(0, 1, gsap.utils.mapRange(start, end, 0, 1, p));
-          gsap.set(el, {
-            opacity: t,
-            y: 50 * (1 - t),
-            scale: 0.95 + 0.05 * t,
-          });
-        });
-      },
-    });
-
-    return () => st.kill();
-  }, { scope: sectionRef, dependencies: [isMobile] });
+  const scale = useTransform(smoothProgress, [0, 0.1], [0.92, 1]);
+  const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
+  const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
 
   if (isMobile) {
     return (
@@ -256,7 +238,10 @@ export default function Timeline() {
       style={{ minHeight: `${N * 80 + 80}vh` }}
     >
       <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-        <div ref={wrapperRef} className="w-full max-w-3xl mx-auto px-6">
+        <motion.div
+          style={{ scale, opacity }}
+          className="w-full max-w-3xl mx-auto px-6"
+        >
           <div className="text-center mb-12">
             <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
               Journey
@@ -271,7 +256,10 @@ export default function Timeline() {
 
           <div className="relative">
             <div className="absolute left-8 top-0 bottom-0 w-px bg-border">
-              <div ref={lineRef} className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700" />
+              <motion.div
+                className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
+                style={{ height: lineHeight }}
+              />
             </div>
 
             <div className="space-y-6">
@@ -279,12 +267,13 @@ export default function Timeline() {
                 <TimelineCard
                   key={`${entry.year}-${entry.title}`}
                   entry={entry}
-                  setRef={(el) => { cardRefs.current[i] = el; }}
+                  index={i}
+                  scrollYProgress={smoothProgress}
                 />
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

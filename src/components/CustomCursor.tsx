@@ -1,30 +1,29 @@
-import { useRef } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { useEffect, useRef } from "react";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 
 export default function CustomCursor() {
-  const ringRef = useRef<HTMLDivElement>(null);
-  const dotRef = useRef<HTMLDivElement>(null);
+  const dotX = useMotionValue(-100);
+  const dotY = useMotionValue(-100);
 
-  useGSAP(() => {
-    gsap.set([dotRef.current, ringRef.current], {
-      xPercent: -50,
-      yPercent: -50,
-      x: -100,
-      y: -100,
-    });
+  const rawX = useMotionValue(-100);
+  const rawY = useMotionValue(-100);
 
-    const setDotX = gsap.quickTo(dotRef.current, "x", { duration: 0, ease: "none" });
-    const setDotY = gsap.quickTo(dotRef.current, "y", { duration: 0, ease: "none" });
-    const setRingX = gsap.quickTo(ringRef.current, "x", { duration: 0.35, ease: "power3.out" });
-    const setRingY = gsap.quickTo(ringRef.current, "y", { duration: 0.35, ease: "power3.out" });
-    const setRingScale = gsap.quickTo(ringRef.current, "scale", { duration: 0.3, ease: "power3.out" });
-    const setRingOpacity = gsap.quickTo(ringRef.current, "opacity", { duration: 0.3, ease: "power3.out" });
+  const ringX = useSpring(rawX, { stiffness: 150, damping: 20, mass: 0.5 });
+  const ringY = useSpring(rawY, { stiffness: 150, damping: 20, mass: 0.5 });
 
+  const isHovering = useRef(false);
+
+  const rawScale = useMotionValue(1);
+  const rawOpacity = useMotionValue(1);
+  const ringScale = useSpring(rawScale, { stiffness: 200, damping: 25 });
+  const ringOpacity = useSpring(rawOpacity, { stiffness: 200, damping: 25 });
+
+  useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      setDotX(e.clientX);
-      setDotY(e.clientY);
-      setRingX(e.clientX);
-      setRingY(e.clientY);
+      dotX.set(e.clientX);
+      dotY.set(e.clientY);
+      rawX.set(e.clientX);
+      rawY.set(e.clientY);
     };
 
     const onEnter = (e: MouseEvent) => {
@@ -32,8 +31,10 @@ export default function CustomCursor() {
       if (
         target.closest("a, button, [role='button'], input, textarea, select, label, [tabindex]")
       ) {
-        setRingScale(2);
-        setRingOpacity(0.6);
+        isHovering.current = true;
+        rawScale.set(2);
+        rawOpacity.set(0.6);
+
       }
     };
 
@@ -42,8 +43,9 @@ export default function CustomCursor() {
       if (
         target.closest("a, button, [role='button'], input, textarea, select, label, [tabindex]")
       ) {
-        setRingScale(1);
-        setRingOpacity(1);
+        isHovering.current = false;
+        rawScale.set(1);
+        rawOpacity.set(1);
       }
     };
 
@@ -56,19 +58,37 @@ export default function CustomCursor() {
       document.removeEventListener("mouseover", onEnter);
       document.removeEventListener("mouseout", onLeave);
     };
-  }, []);
+  }, [dotX, dotY, rawX, rawY, ringScale, ringOpacity]);
 
   return (
     <>
-      {/* Outer ring — eased lag behind the cursor */}
-      <div ref={ringRef} className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block">
+      {/* Outer ring — springs behind the cursor */}
+      <motion.div
+        className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block"
+        style={{
+          x: ringX,
+          y: ringY,
+          translateX: "-50%",
+          translateY: "-50%",
+          scale: ringScale,
+          opacity: ringOpacity,
+        }}
+      >
         <div className="w-8 h-8 rounded-full border border-violet-400/70" />
-      </div>
+      </motion.div>
 
       {/* Inner dot — snaps instantly to cursor */}
-      <div ref={dotRef} className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block">
+      <motion.div
+        className="fixed top-0 left-0 pointer-events-none z-[9999] hidden md:block"
+        style={{
+          x: dotX,
+          y: dotY,
+          translateX: "-50%",
+          translateY: "-50%",
+        }}
+      >
         <div className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-      </div>
+      </motion.div>
     </>
   );
 }
