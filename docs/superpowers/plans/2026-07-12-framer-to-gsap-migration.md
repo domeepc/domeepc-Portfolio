@@ -11,7 +11,8 @@
 ## Global Constraints
 
 - Node >= 22.12.0 (from `package.json` `engines`).
-- No test framework exists in this repo (no vitest/jest/playwright configured) — verification for every task is `npm run build` (catches TypeScript/import errors via Astro's build-time checks) plus a manual visual check via `npm run dev`. Do not add a test framework as part of this migration — out of scope per the design spec.
+- Package manager is **pnpm** (`pnpm-lock.yaml` is the tracked lockfile — there is no `package-lock.json`). Always use `pnpm add`/`pnpm remove`/`pnpm run`, never `npm install`/`npm run`. Running `npm` in this repo generates a stray `package-lock.json` and can silently install a different dependency version than the one pinned in `pnpm-lock.yaml` (verified during setup: `npm ci` pulled `@tailwindcss/vite@4.3.2` instead of the pinned `4.3.0`, which broke the build with `Missing field tsconfigPaths on BindingViteResolvePluginConfig.resolveOptions`).
+- No test framework exists in this repo (no vitest/jest/playwright configured) — verification for every task is `pnpm run build` (catches TypeScript/import errors via Astro's build-time checks) plus a manual visual check via `pnpm run dev`. Do not add a test framework as part of this migration — out of scope per the design spec.
 - `framer-motion` (`^12.38.0`) stays installed until the final task (Task 10) — do not remove it early, other not-yet-converted components still depend on it.
 - All GSAP code must run client-side only (inside `useGSAP`/`useEffect`), never at module top level — these components hydrate as Astro islands (`client:load` in `src/pages/index.astro:13,15` and `src/layouts/Layout.astro:42`; `client:visible` in `src/pages/index.astro:16-20`).
 - Default easing for one-shot reveal tweens: `power2.out` (closest visual match to Framer Motion's default tween curve). Default easing for continuous/pointer-follow tweens: `power3.out`. These are approximations, not exact spring-physics matches — acceptable per the design spec's fidelity note.
@@ -48,9 +49,9 @@
 
 - [ ] **Step 1: Install dependencies**
 
-Run: `npm install gsap @gsap/react`
+Run: `pnpm add gsap @gsap/react`
 
-Expected: `package.json` `dependencies` gains `"gsap"` and `"@gsap/react"` entries; `package-lock.json` updates.
+Expected: `package.json` `dependencies` gains `"gsap"` and `"@gsap/react"` entries; `pnpm-lock.yaml` updates.
 
 - [ ] **Step 2: Create the shared GSAP setup module**
 
@@ -67,13 +68,13 @@ export { gsap, ScrollTrigger, useGSAP };
 
 - [ ] **Step 3: Verify the build still passes**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: build succeeds (no TypeScript errors resolving the new imports/module).
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add package.json package-lock.json src/lib/gsap.ts
+git add package.json pnpm-lock.yaml src/lib/gsap.ts
 git commit -m "chore: add gsap and @gsap/react dependencies"
 ```
 
@@ -210,12 +211,12 @@ export default function About() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: build succeeds, no leftover `framer-motion`/`useScrollAnimation` imports in this file.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, open the site, scroll to the About section.
+Run: `pnpm run dev`, open the site, scroll to the About section.
 Expected: header fades/slides up, avatar slides in from the left, text slides in from the right, the four highlight chips fade up in a staggered sequence — matching the previous feel. Scroll away and back: animation does not replay (once-only).
 
 - [ ] **Step 4: Commit**
@@ -312,12 +313,12 @@ export default function Skills() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, scroll to Skills section.
+Run: `pnpm run dev`, scroll to Skills section.
 Expected: header fades up, marquee rows fade in (marquees keep scrolling via existing CSS `marquee-scroll` animation, untouched), legend fades in last. Once-only on scroll back.
 
 - [ ] **Step 4: Commit**
@@ -500,12 +501,12 @@ export default function Projects() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, scroll to Projects section.
+Run: `pnpm run dev`, scroll to Projects section.
 Expected: header fades up, project cards fade+slide up staggered by 0.1s each, CTA button fades up last. Hovering a card lifts it by 6px and releases smoothly on mouse leave.
 
 - [ ] **Step 4: Commit**
@@ -629,12 +630,12 @@ Everything above the component (icons, `links` array, lines 8-45 of the original
 
 - [ ] **Step 3: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 4: Manual visual check**
 
-Run: `npm run dev`, scroll to the footer/Contact section.
+Run: `pnpm run dev`, scroll to the footer/Contact section.
 Expected: header fades up, link cards fade up, footer bottom text fades in, in sequence. Footer text now reads "GSAP" instead of "Framer Motion".
 
 - [ ] **Step 5: Commit**
@@ -953,12 +954,12 @@ export default function Timeline() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, resize the browser to desktop width (>= 768px), scroll through the Experience section.
+Run: `pnpm run dev`, resize the browser to desktop width (>= 768px), scroll through the Experience section.
 Expected: section pins (sticky) while scrolling, the vertical line grows downward, each card scales/fades/slides in as scroll progress passes its slice — same feel as before. Resize to mobile width (< 768px) and reload: each timeline card fades up individually as it's scrolled into view, staggered slightly by index.
 
 - [ ] **Step 4: Commit**
@@ -1224,12 +1225,12 @@ export default function Hero() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, load the homepage.
+Run: `pnpm run dev`, load the homepage.
 Expected: badge, name, title, location, CTA buttons, and scroll indicator fade/slide in sequentially on load, same order/timing as before. Moving the mouse across the hero shifts the glow, grid, and floating particles with a smooth lag (particles farther "deep" move more). The scroll-down arrow bounces continuously.
 
 - [ ] **Step 4: Commit**
@@ -1384,12 +1385,12 @@ export default function Navbar({ baseUrl = '/' }: { baseUrl?: string }) {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, load the homepage.
+Run: `pnpm run dev`, load the homepage.
 Expected: navbar fades in on load. Resize to mobile width, click the hamburger: fullscreen menu fades/scales in; click a link or press Escape: menu fades/scales out (no layout jump, background scroll stays locked while open).
 
 - [ ] **Step 4: Commit**
@@ -1491,12 +1492,12 @@ export default function CustomCursor() {
 
 - [ ] **Step 2: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds.
 
 - [ ] **Step 3: Manual visual check**
 
-Run: `npm run dev`, load the homepage on a desktop-width viewport, move the mouse around.
+Run: `pnpm run dev`, load the homepage on a desktop-width viewport, move the mouse around.
 Expected: small dot snaps instantly to the cursor; larger ring follows with a smooth eased lag. Hovering an interactive element (link/button) grows the ring and dims its opacity; leaving shrinks/restores it.
 
 - [ ] **Step 4: Commit**
@@ -1530,17 +1531,17 @@ rm src/hooks/useScrollAnimation.ts
 
 - [ ] **Step 3: Remove the dependency**
 
-Run: `npm uninstall framer-motion`
-Expected: `package.json` `dependencies` no longer lists `framer-motion`; `package-lock.json` updates.
+Run: `pnpm remove framer-motion`
+Expected: `package.json` `dependencies` no longer lists `framer-motion`; `pnpm-lock.yaml` updates.
 
 - [ ] **Step 4: Verify build**
 
-Run: `npm run build`
+Run: `pnpm run build`
 Expected: succeeds with no missing-module errors.
 
 - [ ] **Step 5: Full manual regression pass**
 
-Run: `npm run dev`, walk through the entire page top to bottom:
+Run: `pnpm run dev`, walk through the entire page top to bottom:
 - Hero: mount animation sequence, mouse parallax, scroll-arrow bounce.
 - Navbar: mount fade, scroll-triggered background blur, mobile menu open/close.
 - About, Skills, Projects, Contact: scroll-triggered reveals fire once each, in the same stagger order as before.
@@ -1562,4 +1563,4 @@ git commit -m "chore: remove framer-motion, migration to gsap complete"
 
 - **Spec coverage:** All 9 original framer-motion files (Hero, Navbar, CustomCursor, About, Skills, Projects, Contact, Timeline, useScrollAnimation) have a task. The fidelity note (eased approximation vs. literal spring physics) is reflected in Task 7/9's use of `quickTo` with tuned duration/ease instead of stiffness/damping.
 - **Type consistency:** `gsap`, `ScrollTrigger`, `useGSAP` names are identical across every task (all imported from `@/lib/gsap`, defined once in Task 1).
-- **No test framework:** every task's verification is `npm run build` + a manual `npm run dev` check, consistent with the Global Constraints section — no task invents a test command that doesn't exist in this repo.
+- **No test framework:** every task's verification is `pnpm run build` + a manual `pnpm run dev` check, consistent with the Global Constraints section — no task invents a test command that doesn't exist in this repo.
