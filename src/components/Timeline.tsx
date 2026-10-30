@@ -1,280 +1,103 @@
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  MotionValue,
-} from "framer-motion";
-import { useRef, useState, useEffect } from "react";
-import {
-  GraduationCap,
-  FolderGit2,
-  Sparkles,
-  Globe,
-} from "lucide-react";
-import { timeline } from "@/lib/data";
-import type { TimelineEntry } from "@/lib/data";
-import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { motion } from 'framer-motion';
+import { timeline } from '@/lib/data';
+import type { TimelineEntry } from '@/lib/data';
+import SectionHeader from './ascii/SectionHeader';
+import ScrambleText from './ascii/ScrambleText';
 
-const typeConfig: Record<
-  TimelineEntry["type"],
-  { icon: React.ElementType; color: string; bg: string }
-> = {
-  education: {
-    icon: GraduationCap,
-    color: "text-violet-800",
-    bg: "bg-violet-500 border-violet-800/30",
-  },
-  work: {
-    icon: Sparkles,
-    color: "text-blue-800",
-    bg: "bg-blue-500 border-blue-800/30",
-  },
-  project: {
-    icon: FolderGit2,
-    color: "text-emerald-800",
-    bg: "bg-emerald-500 border-emerald-800/30",
-  },
+/** Stable fake short-SHA so every entry reads like a real commit. */
+function shortSha(input: string) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i++) h = Math.imul(h ^ input.charCodeAt(i), 16777619);
+  return (h >>> 0).toString(16).padStart(8, '0').slice(0, 7);
+}
+
+const typeTag: Record<TimelineEntry['type'], string> = {
+  work: 'work',
+  education: 'edu',
+  project: 'proj',
 };
 
-const N = timeline.length;
-
-function MobileTimelineCard({
-  entry,
-  index,
-}: {
-  entry: TimelineEntry;
-  index: number;
-}) {
-  const { ref, isInView } = useScrollAnimation();
-  const config = typeConfig[entry.type];
-  const Icon = config.icon;
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
-      className="relative flex gap-4 pl-0"
-    >
-      <div className="relative z-10 shrink-0">
-        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
-          <Icon size={14} className={config.color} />
-        </div>
-      </div>
-
-      <div className="flex-1 min-w-0 pb-6">
-        <div className="p-4 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
-              {entry.website && (
-                <a href={entry.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={12} className="text-violet-400 shrink-0" />
-                </a>
-              )}
-              <h3 className="font-semibold text-foreground text-sm leading-snug">
-                {entry.title}
-              </h3>
-              <p className="text-xs text-violet-400/80 font-medium">
-                {entry.institution}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {entry.current && (
-                <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  Current
-                </span>
-              )}
-              <span className="text-xs text-muted-foreground font-medium">
-                {entry.year}
-              </span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {entry.description}
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function TimelineCard({
-  entry,
-  index,
-  scrollYProgress,
-}: {
-  entry: TimelineEntry;
-  index: number;
-  scrollYProgress: MotionValue<number>;
-}) {
-  const config = typeConfig[entry.type];
-  const Icon = config.icon;
-
-  const sliceSize = 0.85 / N;
-  const start = index === 0 ? 0.08 : 0.1 + index * sliceSize;
-  const end = index === 0 ? 0.1 : 0.1 + index * sliceSize + sliceSize * 0.5;
-
-  const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
-  const y = useTransform(scrollYProgress, [start, end], [50, 0]);
-  const scale = useTransform(scrollYProgress, [start, end], [0.95, 1]);
-
-  return (
-    <motion.div style={{ opacity, y, scale }} className="relative flex gap-2 md:gap-6 pl-0 md:pl-4">
-      {/* Icon node */}
-      <div className="relative z-10 shrink-0">
-
-        <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${config.bg}`}>
-          <Icon size={14} className={config.color} />
-        </div>
-      </div>
-
-      {/* Content card */}
-      <div className="flex-1 pb-2 px-4 min-w-0">
-        <div className="p-4 md:p-5 rounded-xl bg-card border border-border hover:border-violet-500/30 transition-colors glow-border">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
-              {entry.website && (
-                <a href={entry.website} target="_blank" rel="noopener noreferrer">
-                  <Globe size={13} className="text-violet-400 shrink-0" />
-                </a>
-              )}
-              <h3 className="font-semibold text-foreground text-sm md:text-base leading-snug">
-                {entry.title}
-              </h3>
-              <p className="text-sm text-violet-400/80 font-medium">
-                {entry.institution}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {entry.current && (
-                <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  Current
-                </span>
-              )}
-              <span className="text-xs text-muted-foreground font-medium">
-                {entry.year}
-              </span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {entry.description}
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 export default function Timeline() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 767px)');
-    setIsMobile(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 200,
-    damping: 40,
-    restDelta: 0.001,
-  });
-
-  const scale = useTransform(smoothProgress, [0, 0.1], [0.92, 1]);
-  const opacity = useTransform(smoothProgress, [0, 0.08], [0, 1]);
-  const lineHeight = useTransform(smoothProgress, [0.1, 0.95], ["0%", "85%"]);
-
-  if (isMobile) {
-    return (
-      <section id="experience" className="py-16 px-6 relative overflow-x-hidden">
-        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
-              Journey
-            </p>
-            <h2 className="text-3xl font-bold mb-4">
-              Education & <span className="gradient-text">Experience</span>
-            </h2>
-            <p className="text-muted-foreground text-base max-w-md mx-auto">
-              My path from first lines of code to production deployments.
-            </p>
-          </div>
-
-          <div className="relative">
-            <div className="absolute left-[15px] top-0 bottom-0 w-px bg-gradient-to-b from-violet-400 via-violet-600 to-transparent" />
-            <div className="space-y-0">
-              {timeline.map((entry, i) => (
-                <MobileTimelineCard
-                  key={`${entry.year}-${entry.title}`}
-                  entry={entry}
-                  index={i}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const entries = [...timeline].reverse();
 
   return (
-    <div
-      id="experience"
-      ref={sectionRef}
-      className="relative"
-      style={{ minHeight: `${N * 80 + 80}vh` }}
-    >
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
-        <motion.div
-          style={{ scale, opacity }}
-          className="w-full max-w-3xl mx-auto px-6"
-        >
-          <div className="text-center mb-12">
-            <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
-              Journey
-            </p>
-            <h2 className="text-4xl font-bold mb-4">
-              Education & <span className="gradient-text">Experience</span>
-            </h2>
-            <p className="text-muted-foreground text-base max-w-md mx-auto">
-              My path from first lines of code to production deployments.
-            </p>
-          </div>
+    <section id="experience" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <SectionHeader index="04" title="log" command="git log --graph --all" />
 
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-px bg-border">
-              <motion.div
-                className="absolute top-0 left-0 w-full bg-linear-to-b from-violet-400 to-violet-700"
-                style={{ height: lineHeight }}
-              />
-            </div>
+        <ol className="relative max-w-4xl">
+          {entries.map((entry, i) => {
+            const isHead = i === 0;
+            return (
+              <motion.li
+                key={entry.title}
+                className="group grid grid-cols-[3ch_1fr] gap-x-3 md:grid-cols-[4ch_1fr] md:gap-x-6"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ duration: 0.4 }}
+              >
+                {/* Graph gutter: a commit node and the rail below it */}
+                <div aria-hidden="true" className="flex flex-col items-center">
+                  <motion.span
+                    className="text-lg leading-6 text-acid"
+                    initial={{ scale: 0, rotate: -180 }}
+                    whileInView={{ scale: 1, rotate: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
+                  >
+                    {entry.current ? '◉' : '*'}
+                  </motion.span>
+                  {i < entries.length - 1 && (
+                    <motion.span
+                      className="w-px flex-1 origin-top bg-[repeating-linear-gradient(to_bottom,var(--color-faint)_0_6px,transparent_6px_10px)]"
+                      initial={{ scaleY: 0 }}
+                      whileInView={{ scaleY: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.9, delay: 0.2, ease: [0.7, 0, 0.2, 1] }}
+                    />
+                  )}
+                </div>
 
-            <div className="space-y-6">
-              {timeline.map((entry, i) => (
-                <TimelineCard
-                  key={`${entry.year}-${entry.title}`}
-                  entry={entry}
-                  index={i}
-                  scrollYProgress={smoothProgress}
-                />
-              ))}
-            </div>
-          </div>
-        </motion.div>
+                <div className="pb-14">
+                  <p className="text-xs leading-6">
+                    <span className="text-acid">commit {shortSha(entry.title)}</span>
+                    {isHead && (
+                      <span className="text-dim">
+                        {' '}(<span className="text-acid">HEAD</span> → <span className="text-paper">main</span>)
+                      </span>
+                    )}
+                    <span className="text-dim"> [{typeTag[entry.type]}]</span>
+                  </p>
+                  <p className="mt-1 text-xs text-dim">
+                    Date: &nbsp;{entry.year}
+                    {entry.current && <span className="ml-3 text-acid">● running</span>}
+                  </p>
+                  <h3 className="mt-4 text-[clamp(1.25rem,2.6vw,2rem)] font-bold leading-tight transition-colors group-hover:text-acid">
+                    <ScrambleText text={entry.title} duration={700} />
+                  </h3>
+                  <p className="mt-1 text-sm text-dim">
+                    @ {entry.website ? (
+                      <a href={entry.website} target="_blank" rel="noopener noreferrer" className="link-ascii text-paper">
+                        {entry.institution}
+                      </a>
+                    ) : (
+                      entry.institution
+                    )}
+                  </p>
+                  <p className="mt-4 max-w-2xl border-l border-line pl-4 text-sm leading-relaxed text-dim">
+                    {entry.description}
+                  </p>
+                </div>
+              </motion.li>
+            );
+          })}
+        </ol>
+        <p className="grid max-w-4xl grid-cols-[3ch_1fr] gap-x-3 text-xs text-faint md:grid-cols-[4ch_1fr] md:gap-x-6">
+          <span className="text-center text-acid">$</span>
+          <span className="caret" />
+        </p>
       </div>
-    </div>
+    </section>
   );
 }

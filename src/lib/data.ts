@@ -4,6 +4,7 @@ export const profile = {
   title: 'Computer Engineering Student & Developer',
   bio: 'Computer Engineer student at the University of Split. I build web apps, embedded systems, and algorithms — and make videos about gaming and coding.',
   location: 'Kaštela, Split-Dalmatia, Croatia',
+  coords: '43.5446°N 16.4288°E',
   avatarUrl: 'https://avatars.githubusercontent.com/u/132380559?v=4',
   githubUrl: 'https://github.com/domeepc',
   linkedinUrl: 'https://www.linkedin.com/in/domagoj-milardović-0a3b39263/',
