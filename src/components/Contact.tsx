@@ -15,7 +15,7 @@ const COMMANDS: Record<string, () => string | { open: string; text: string }> = 
   whoami: () => `${profile.name} — ${profile.title}`,
   github: () => ({ open: profile.githubUrl, text: `opening ${profile.githubUrl} ...` }),
   linkedin: () => ({ open: profile.linkedinUrl, text: 'opening linkedin ...' }),
-  location: () => `${profile.location} · 43.55°N 16.36°E`,
+  location: () => `${profile.location} · ${profile.coords}`,
   stack: () => 'ts · js · c · c++ · java · react · node · spring boot · astro',
   'sudo hire-me': () => ({ open: profile.linkedinUrl, text: 'permission granted. routing you to linkedin ...' }),
 };
