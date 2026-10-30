@@ -56,10 +56,11 @@ export default function Navbar(_: { baseUrl?: string }) {
 
   useEffect(() => {
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(`#${e.target.id}`)),
+      (entries) =>
+        entries.forEach((e) => e.isIntersecting && setActive(e.target.id === 'home' ? '' : `#${e.target.id}`)),
       { rootMargin: '-45% 0px -50% 0px' },
     );
-    navLinks.forEach(({ href }) => {
+    [{ href: '#home' }, ...navLinks].forEach(({ href }) => {
       const el = document.querySelector(href);
       if (el) io.observe(el);
     });

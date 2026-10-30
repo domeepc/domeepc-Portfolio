@@ -53,11 +53,11 @@ export default function Skills() {
   const names = skills.map((s) => s.name);
 
   return (
-    <section id="skills" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+    <section id="skills" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="02" title="stack" command="ls -la ~/skills" />
 
-        <div className="grid gap-10 lg:grid-cols-3 lg:gap-6">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
           {groups.map(({ key, label, file }, g) => (
             <AsciiBox key={key} label={file} className="p-5 pt-7 md:p-6 md:pt-8">
               <h3 className="mb-5 text-xs uppercase tracking-[0.2em] text-dim">
@@ -94,7 +94,7 @@ export default function Skills() {
         </p>
       </div>
 
-      <div aria-hidden="true" className="mt-24 space-y-2 border-y border-line py-6">
+      <div aria-hidden="true" className="mt-24 space-y-2 border-t border-line py-6 md:mt-32">
         {[false, true].map((reverse) => (
           <div key={String(reverse)} className="marquee overflow-hidden">
             <div

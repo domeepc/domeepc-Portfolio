@@ -13,6 +13,13 @@ const whoami: [string, string][] = [
   ['repos', '11+ public on GitHub'],
 ];
 
+// Columns must line up exactly: ┐├┘ sit at col 11, ┌┤└ at col 20.
+const DIAGRAM = [
+  '  web ─────┐        ┌───── embedded',
+  '           ├─[ me ]─┤',
+  '  algo ────┘        └───── video',
+].join('\n');
+
 const reveal = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
@@ -22,8 +29,8 @@ const reveal = {
 
 export default function About() {
   return (
-    <section id="about" className="relative scroll-mt-16 border-t border-line px-4 py-28 md:px-8 md:py-40">
-      <div className="mx-auto max-w-7xl">
+    <section id="about" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="01" title="about" command="cat ./about.md" />
 
         <div className="grid gap-16 md:grid-cols-12 md:gap-10">
@@ -53,17 +60,15 @@ export default function About() {
                   {whoami.map(([k, v], i) => (
                     <motion.div
                       key={k}
-                      className="grid grid-cols-[7ch_1fr] gap-4 sm:grid-cols-[8ch_1fr]"
+                      className="grid grid-cols-[6ch_2ch_1fr] sm:grid-cols-[8ch_2ch_1fr]"
                       initial={{ opacity: 0, x: -8 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: 0.2 + i * 0.07 }}
                     >
                       <dt className="text-dim">{k}</dt>
-                      <dd>
-                        <span className="text-faint">: </span>
-                        {v}
-                      </dd>
+                      <span aria-hidden="true" className="text-faint">:</span>
+                      <dd>{v}</dd>
                     </motion.div>
                   ))}
                 </dl>
@@ -74,11 +79,9 @@ export default function About() {
               {...reveal}
               transition={{ ...reveal.transition, delay: 0.2 }}
               aria-hidden="true"
-              className="ascii-pre hidden text-[11px] leading-tight text-faint sm:block"
+              className="ascii-pre hidden text-xs leading-snug text-dim sm:block"
             >
-{`  web ────┐      ┌──── embedded
-          ├─[ me ]─┤
-  algo ───┘      └──── video`}
+              {DIAGRAM}
             </motion.pre>
           </div>
         </div>

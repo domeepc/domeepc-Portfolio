@@ -122,8 +122,8 @@ function Terminal() {
 
 export default function Contact() {
   return (
-    <footer id="contact" className="relative scroll-mt-16 border-t border-line px-4 pt-28 md:px-8 md:pt-40">
-      <div className="mx-auto max-w-7xl">
+    <footer id="contact" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="flex items-center gap-4 text-xs tracking-[0.2em] text-dim">
           <span className="text-acid">// 05</span>
           <span aria-hidden="true" className="flex-1 overflow-hidden whitespace-nowrap text-faint">
@@ -137,7 +137,7 @@ export default function Contact() {
           <AsciiReveal art={talkBanner} label="Say hi" duration={1300} />
         </div>
 
-        <div className="mt-16 grid gap-12 md:grid-cols-2">
+        <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-2">
           <div className="space-y-8">
             <p className="max-w-md text-lg leading-relaxed">
               Got a project, a question, or a weird embedded bug? My DMs are open —

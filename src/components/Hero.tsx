@@ -82,7 +82,7 @@ export default function Hero() {
 
   return (
     <section id="home" className="relative flex min-h-[100svh] flex-col overflow-hidden pt-16">
-      <AsciiDonut className="pointer-events-none absolute inset-0 h-full w-full opacity-15 md:left-auto md:right-[-12%] md:w-[50%] md:opacity-90" />
+      <AsciiDonut className="pointer-events-none absolute inset-x-0 bottom-12 top-16 h-[calc(100%-7rem)] w-full opacity-10 lg:left-auto lg:right-[-10%] lg:w-[50%] lg:opacity-90" />
 
       <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center px-4 py-12 md:px-8">
         <motion.dl

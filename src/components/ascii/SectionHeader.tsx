@@ -26,7 +26,7 @@ export default function SectionHeader({ index, title, command }: Props) {
         >
           {'─'.repeat(240)}
         </motion.span>
-        <span>{title}</span>
+        <span className="uppercase">{title}</span>
       </div>
       <h2 className="mt-6 text-[clamp(2.25rem,7vw,5.5rem)] font-extrabold uppercase leading-[0.9] tracking-tight">
         <ScrambleText text={title} duration={900} />

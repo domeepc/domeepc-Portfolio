@@ -1,21 +1,21 @@
 import { useRef, useState } from 'react';
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { repos } from '@/lib/data';
 import type { Repo } from '@/lib/data';
 import SectionHeader from './ascii/SectionHeader';
 import ScrambleText from './ascii/ScrambleText';
+
+const PREVIEW_WIDTH = 340;
 
 function formatDate(iso: string) {
   return iso.slice(0, 7).replace('-', '.');
 }
 
 /** Terminal card that trails the pointer while a row is hovered (desktop only). */
-function Preview({ repo, x, y }: { repo: Repo; x: ReturnType<typeof useSpring>; y: ReturnType<typeof useSpring> }) {
+function Preview({ repo }: { repo: Repo }) {
   return (
     <motion.div
-      aria-hidden="true"
-      className="pointer-events-none absolute left-0 top-0 z-20 hidden w-[340px] border border-acid bg-ink p-4 text-[11px] leading-relaxed shadow-[8px_8px_0_0_var(--color-acid)] lg:block"
-      style={{ x, y }}
+      className="w-[340px] border border-acid bg-ink p-4 text-[11px] leading-relaxed shadow-[8px_8px_0_0_var(--color-acid)]"
       initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
       animate={{ opacity: 1, scale: 1, rotate: 0 }}
       exit={{ opacity: 0, scale: 0.9 }}
@@ -44,20 +44,20 @@ function Preview({ repo, x, y }: { repo: Repo; x: ReturnType<typeof useSpring>; 
 export default function Projects() {
   const listRef = useRef<HTMLOListElement>(null);
   const [hovered, setHovered] = useState<Repo | null>(null);
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const x = useSpring(mx, { stiffness: 260, damping: 26 });
-  const y = useSpring(my, { stiffness: 260, damping: 26 });
+  const previewRef = useRef<HTMLDivElement>(null);
 
   const onMove = (e: React.PointerEvent) => {
     const rect = listRef.current!.getBoundingClientRect();
-    mx.set(e.clientX - rect.left + 24);
-    my.set(e.clientY - rect.top + 24);
+    const x = e.clientX - rect.left + 24;
+    // Keep the card in the right half so it never covers the project title.
+    const px = Math.min(Math.max(x, rect.width * 0.5), rect.width - PREVIEW_WIDTH);
+    const py = e.clientY - rect.top - 80;
+    if (previewRef.current) previewRef.current.style.transform = `translate(${px}px, ${py}px)`;
   };
 
   return (
-    <section id="projects" className="relative scroll-mt-16 border-t border-line px-4 py-28 md:px-8 md:py-40">
-      <div className="mx-auto max-w-7xl">
+    <section id="projects" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="03" title="work" command="git log --oneline --repos" />
 
         <div className="hidden grid-cols-12 gap-4 border-b border-line pb-3 text-[11px] uppercase tracking-[0.15em] text-faint md:grid">
@@ -110,7 +110,7 @@ export default function Projects() {
                     href={repo.homepage}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative z-10 col-span-10 col-start-3 w-fit text-xs uppercase tracking-[0.15em] text-acid hover:underline group-hover:text-ink md:col-span-3 md:col-start-auto"
+                    className="relative z-10 col-span-10 col-start-3 w-fit text-xs uppercase tracking-[0.15em] text-acid hover:underline group-hover:text-ink whitespace-nowrap md:col-span-4 md:col-start-auto"
                   >
                     <span className="animate-pulse">●</span> live → {new URL(repo.homepage).host}
                   </a>
@@ -118,7 +118,13 @@ export default function Projects() {
               </div>
             </motion.li>
           ))}
-          <AnimatePresence>{hovered && <Preview key={hovered.name} repo={hovered} x={x} y={y} />}</AnimatePresence>
+          <div
+            ref={previewRef}
+            aria-hidden="true"
+            className="pointer-events-none absolute left-0 top-0 z-20 hidden transition-transform duration-300 ease-out lg:block"
+          >
+            <AnimatePresence>{hovered && <Preview key={hovered.name} repo={hovered} />}</AnimatePresence>
+          </div>
         </ol>
 
         <div className="mt-12 flex justify-end">

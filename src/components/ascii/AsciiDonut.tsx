@@ -62,7 +62,7 @@ export default function AsciiDonut({ className }: { className?: string }) {
       zbuf.fill(0);
       lum.fill(-1);
       const aspect = cellH / cellW;
-      const K1 = (0.92 * Math.min(cols / 2, (rows * aspect) / 2) * K2) / (R1 + R2);
+      const K1 = (0.86 * Math.min(cols / 2, (rows * aspect) / 2) * K2) / (R1 + R2);
       const a = A + tiltY, b = B + tiltX;
       const cA = Math.cos(a), sA = Math.sin(a), cB = Math.cos(b), sB = Math.sin(b);
 

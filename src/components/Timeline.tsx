@@ -21,8 +21,8 @@ export default function Timeline() {
   const entries = [...timeline].reverse();
 
   return (
-    <section id="experience" className="relative scroll-mt-16 border-t border-line px-4 py-28 md:px-8 md:py-40">
-      <div className="mx-auto max-w-7xl">
+    <section id="experience" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="04" title="log" command="git log --graph --all" />
 
         <ol className="relative max-w-4xl">
@@ -93,8 +93,9 @@ export default function Timeline() {
             );
           })}
         </ol>
-        <p className="text-xs text-faint">
-          <span className="text-acid">$</span> <span className="caret">_</span>
+        <p className="grid max-w-4xl grid-cols-[3ch_1fr] gap-x-3 text-xs text-faint md:grid-cols-[4ch_1fr] md:gap-x-6">
+          <span className="text-center text-acid">$</span>
+          <span className="caret" />
         </p>
       </div>
     </section>
