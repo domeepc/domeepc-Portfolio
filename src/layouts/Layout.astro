@@ -1,6 +1,6 @@
 ---
 import '../styles/globals.css';
-import CustomCursor from '../components/CustomCursor';
+import AsciiCursor from '../components/AsciiCursor';
 
 interface Props {
   title?: string;
@@ -20,6 +20,7 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="author" content="Domagoj Milardović" />
+    <meta name="theme-color" content="#0b0b0a" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -27,19 +28,22 @@ const {
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&display=swap"
       rel="stylesheet"
     />
+    <script is:inline>
+      // Skip the boot sequence on repeat visits within a session, before first paint.
+      try {
+        if (sessionStorage.getItem('booted') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          document.documentElement.dataset.booted = '1';
+        }
+      } catch (_) {}
+    </script>
     <title>{title}</title>
   </head>
-  <body class="min-h-screen antialiased cursor-none overflow-x-hidden">
-    <!-- Ambient depth blobs — fixed, full-page atmosphere -->
-    <div aria-hidden="true" class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      <div class="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-violet-900/15 blur-[200px]" />
-      <div class="absolute top-[40%] left-[-10%] w-[500px] h-[500px] rounded-full bg-violet-950/10 blur-[180px]" />
-      <div class="absolute bottom-[5%] right-[-5%] w-[400px] h-[400px] rounded-full bg-violet-900/10 blur-[160px]" />
-    </div>
-    <CustomCursor client:load />
+  <body class="min-h-screen antialiased overflow-x-hidden">
+    <div aria-hidden="true" class="crt"></div>
+    <AsciiCursor client:load />
     <slot />
   </body>
 </html>

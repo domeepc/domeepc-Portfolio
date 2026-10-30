@@ -1,136 +1,123 @@
-import { motion } from 'framer-motion';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { useEffect, useRef, useState } from 'react';
+import { useInView } from 'framer-motion';
 import { skills } from '@/lib/data';
 import type { Skill } from '@/lib/data';
+import { prefersReducedMotion } from '@/lib/boot';
+import AsciiBox from './ascii/AsciiBox';
+import SectionHeader from './ascii/SectionHeader';
 
-const levelColors = {
-  Expert:     'border-violet-400 bg-violet-400/10 text-violet-300',
-  Proficient: 'border-violet-500/50 bg-violet-500/10 text-violet-400',
-  Learning:   'border-violet-700/50 bg-violet-700/10 text-violet-500',
-};
+const BAR = 16;
+const levelCells: Record<Skill['level'], number> = { Expert: 16, Proficient: 12, Learning: 6 };
 
-const levelDot = {
-  Expert:     'bg-violet-400',
-  Proficient: 'bg-violet-500',
-  Learning:   'bg-violet-700',
-};
+const groups: { key: Skill['category']; label: string; file: string }[] = [
+  { key: 'Language', label: 'languages', file: 'lang.cfg' },
+  { key: 'Framework', label: 'frameworks', file: 'fw.cfg' },
+  { key: 'Tool', label: 'tooling', file: 'tools.cfg' },
+];
 
-function SkillPill({ skill }: { skill: Skill }) {
-  return (
-    <div
-      className={`flex items-center gap-2 px-4 py-2 mx-2 rounded-lg border font-medium text-sm cursor-default shrink-0 ${levelColors[skill.level]}`}
-    >
-      <span className={`w-2 h-2 rounded-full ${levelDot[skill.level]}`} />
-      {skill.name}
-      <span className="text-[10px] opacity-60 font-normal ml-1">{skill.level}</span>
-    </div>
-  );
-}
+/** `[████████░░░░]` that fills one cell at a time once visible. */
+function Meter({ level, delay }: { level: Skill['level']; delay: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, amount: 1 });
+  const target = levelCells[level];
+  const [cells, setCells] = useState(0);
 
-function MarqueeRow({
-  items,
-  direction,
-  speed,
-  label,
-}: {
-  items: Skill[];
-  direction: 'left' | 'right';
-  speed: number;
-  label: string;
-}) {
-  // Repeat until we have at least 10 items per half so the track always
-  // overflows the viewport regardless of how few items the row has.
-  const minCount = 10;
-  const copies = Math.ceil(minCount / items.length);
-  const filled = Array.from({ length: copies }, () => items).flat();
-  // Duplicate the filled list so the seamless loop always has two identical halves.
-  const doubled = [...filled, ...filled];
+  useEffect(() => {
+    if (!inView) return;
+    if (prefersReducedMotion()) return setCells(target);
+    let n = 0;
+    let id = 0;
+    const start = window.setTimeout(() => {
+      id = window.setInterval(() => {
+        n += 1;
+        setCells(n);
+        if (n >= target) clearInterval(id);
+      }, 35);
+    }, delay);
+    return () => {
+      clearTimeout(start);
+      clearInterval(id);
+    };
+  }, [inView, target, delay]);
 
   return (
-    <div>
-      <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-3 px-1">
-        {label}
-      </p>
-      {/* Fade edges */}
-      <div
-        className="overflow-hidden relative"
-        style={{
-          maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-        }}
-      >
-        <div
-          className="marquee-track flex w-max"
-          style={{
-            animationName: 'marquee-scroll',
-            animationDuration: `${speed}s`,
-            animationDirection: direction === 'right' ? 'reverse' : 'normal',
-          }}
-        >
-          {doubled.map((skill, i) => (
-            <SkillPill key={`${skill.name}-${i}`} skill={skill} />
-          ))}
-        </div>
-      </div>
-    </div>
+    <span ref={ref} aria-hidden="true" className="whitespace-pre">
+      <span className="text-faint">[</span>
+      <span className="text-acid">{'█'.repeat(cells)}</span>
+      <span className="text-faint">{'░'.repeat(BAR - cells)}]</span>
+    </span>
   );
 }
 
 export default function Skills() {
-  const { ref, isInView } = useScrollAnimation();
-
-  const languages  = skills.filter((s) => s.category === 'Language');
-  const frameworks = skills.filter((s) => s.category === 'Framework');
-  const tools      = skills.filter((s) => s.category === 'Tool');
+  const names = skills.map((s) => s.name);
 
   return (
-    <section id="skills" className="py-28 px-6 relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-      <div className="max-w-5xl mx-auto" ref={ref}>
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
-            Technical Skills
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            What I <span className="gradient-text">Work With</span>
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-md mx-auto">
-            From low-level C firmware to full-stack TypeScript — a look at my technical toolkit.
-          </p>
-        </motion.div>
+    <section id="skills" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <SectionHeader index="02" title="stack" command="ls -la ~/skills" />
 
-        {/* Marquee rows */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="space-y-10"
-        >
-          <MarqueeRow items={languages}  direction="left"  speed={22} label="Languages" />
-          <MarqueeRow items={frameworks} direction="right" speed={26} label="Frameworks & Runtimes" />
-          <MarqueeRow items={tools}      direction="left"  speed={18} label="Tools & Platforms" />
-        </motion.div>
-
-        {/* Legend */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="flex flex-wrap gap-6 justify-center mt-12 text-xs text-muted-foreground"
-        >
-          {(['Expert', 'Proficient', 'Learning'] as const).map((level) => (
-            <div key={level} className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${levelDot[level]}`} />
-              {level}
-            </div>
+        <div className="grid gap-10 lg:grid-cols-3 lg:gap-6">
+          {groups.map(({ key, label, file }, g) => (
+            <AsciiBox key={key} label={file} className="p-5 pt-7 md:p-6 md:pt-8">
+              <h3 className="mb-5 text-xs uppercase tracking-[0.2em] text-dim">
+                <span className="text-acid">#</span> {label}
+              </h3>
+              <ul className="space-y-3 text-[13px]">
+                {skills
+                  .filter((s) => s.category === key)
+                  .map((s, i) => (
+                    <li
+                      key={s.name}
+                      className="group grid grid-cols-[1fr_auto] items-center gap-3 transition-colors hover:text-acid"
+                    >
+                      <span className="truncate">
+                        <span className="text-faint transition-colors group-hover:text-acid">›</span> {s.name}
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <Meter level={s.level} delay={g * 120 + i * 60} />
+                        <span className="w-[4ch] text-right text-[10px] uppercase text-dim">
+                          {s.level.slice(0, 3)}
+                        </span>
+                        <span className="sr-only">{s.level}</span>
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </AsciiBox>
           ))}
-        </motion.div>
+        </div>
+
+        <p className="mt-6 text-[11px] uppercase tracking-[0.15em] text-faint">
+          legend: <span className="text-dim">exp</span> expert · <span className="text-dim">pro</span> proficient ·{' '}
+          <span className="text-dim">lea</span> learning
+        </p>
+      </div>
+
+      <div aria-hidden="true" className="mt-24 space-y-2 border-y border-line py-6">
+        {[false, true].map((reverse) => (
+          <div key={String(reverse)} className="marquee overflow-hidden">
+            <div
+              className="marquee-track flex w-max text-[clamp(2rem,6vw,4.5rem)] font-extrabold uppercase leading-none"
+              data-reverse={reverse || undefined}
+              style={{ ['--speed' as string]: reverse ? '70s' : '55s' }}
+            >
+              {[0, 1].map((copy) => (
+                <span key={copy} className="flex shrink-0">
+                  {names.map((n) => (
+                    <span
+                      key={n}
+                      className={`px-[0.4em] transition-colors hover:text-acid ${reverse ? 'text-transparent [-webkit-text-stroke:1px_var(--color-faint)]' : 'text-paper'}`}
+                    >
+                      {n}
+                      <span className="pl-[0.8em] text-acid">/</span>
+                    </span>
+                  ))}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

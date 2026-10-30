@@ -1,143 +1,137 @@
-import { motion } from 'framer-motion';
-import { ExternalLink, GitBranch, Globe } from 'lucide-react';
-import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+import { useRef, useState } from 'react';
+import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion';
 import { repos } from '@/lib/data';
+import type { Repo } from '@/lib/data';
+import SectionHeader from './ascii/SectionHeader';
+import ScrambleText from './ascii/ScrambleText';
+
+function formatDate(iso: string) {
+  return iso.slice(0, 7).replace('-', '.');
+}
+
+/** Terminal card that trails the pointer while a row is hovered (desktop only). */
+function Preview({ repo, x, y }: { repo: Repo; x: ReturnType<typeof useSpring>; y: ReturnType<typeof useSpring> }) {
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute left-0 top-0 z-20 hidden w-[340px] border border-acid bg-ink p-4 text-[11px] leading-relaxed shadow-[8px_8px_0_0_var(--color-acid)] lg:block"
+      style={{ x, y }}
+      initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.2 }}
+    >
+      <p className="mb-2 flex justify-between text-dim">
+        <span>~/{repo.name}</span>
+        <span>● ● ●</span>
+      </p>
+      <p>
+        <span className="text-acid">$</span> git clone github.com/domeepc/{repo.name}
+      </p>
+      <p className="text-dim">Cloning into '{repo.name}'... done.</p>
+      <p>
+        <span className="text-acid">$</span> cat README.md | head -1
+      </p>
+      <p className="text-dim">{repo.description}</p>
+      <p className="mt-2">
+        <span style={{ color: repo.languageColor }}>■</span> {repo.language}
+        <span className="text-dim"> · updated {formatDate(repo.updatedAt)}</span>
+      </p>
+    </motion.div>
+  );
+}
 
 export default function Projects() {
-  const { ref, isInView } = useScrollAnimation();
+  const listRef = useRef<HTMLOListElement>(null);
+  const [hovered, setHovered] = useState<Repo | null>(null);
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const x = useSpring(mx, { stiffness: 260, damping: 26 });
+  const y = useSpring(my, { stiffness: 260, damping: 26 });
+
+  const onMove = (e: React.PointerEvent) => {
+    const rect = listRef.current!.getBoundingClientRect();
+    mx.set(e.clientX - rect.left + 24);
+    my.set(e.clientY - rect.top + 24);
+  };
 
   return (
-    <section id="projects" className="py-28 px-6 relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-background/40 to-transparent pointer-events-none" />
-      <div className="max-w-6xl mx-auto" ref={ref}>
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <p className="text-violet-400 text-sm font-semibold tracking-widest uppercase mb-3">
-            Projects
-          </p>
-          <h2 className="text-3xl md:text-4xl font-bold">
-            Things I've <span className="gradient-text">Built</span>
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-md mx-auto">
-            A selection of projects from web apps to embedded firmware — each one a new challenge.
-          </p>
-        </motion.div>
+    <section id="projects" className="relative scroll-mt-16 border-t border-line px-4 py-28 md:px-8 md:py-40">
+      <div className="mx-auto max-w-7xl">
+        <SectionHeader index="03" title="work" command="git log --oneline --repos" />
 
-        {/* Projects grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {repos.map((repo, i) => (
-            <motion.div
-              key={repo.name}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: i * 0.1 }}
-              whileHover={{ y: -6 }}
-              className="group"
-            >
-              <Card className="h-full flex flex-col bg-card border-border glow-border transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-base font-semibold text-foreground group-hover:text-violet-300 transition-colors">
-                      {repo.name}
-                    </CardTitle>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {repo.homepage && (
-                        <a
-                          href={repo.homepage}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-md text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
-                          title="Live site"
-                        >
-                          <Globe size={14} />
-                        </a>
-                      )}
-                      <a
-                        href={repo.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 rounded-md text-muted-foreground hover:text-violet-400 hover:bg-violet-500/10 transition-colors"
-                        title="View on GitHub"
-                      >
-                        <GitBranch size={14} />
-                      </a>
-                    </div>
-                  </div>
-                  <CardDescription className="text-sm leading-relaxed">
-                    {repo.description}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="pt-0 mt-auto">
-                  <div className="flex items-center justify-between">
-                    {/* Language badge */}
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: repo.languageColor }}
-                      />
-                      <span className="text-xs text-muted-foreground font-medium">
-                        {repo.language}
-                      </span>
-                    </div>
-
-                    {/* Updated */}
-                    <span className="text-xs text-muted-foreground/60">
-                      {new Date(repo.updatedAt).toLocaleDateString('en-US', {
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-
-                  {/* Live badge */}
-                  {repo.homepage && (
-                    <div className="mt-3">
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] border-green-500/30 text-green-400 bg-green-500/10 gap-1"
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                        Live
-                      </Badge>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+        <div className="hidden grid-cols-12 gap-4 border-b border-line pb-3 text-[11px] uppercase tracking-[0.15em] text-faint md:grid">
+          <span className="col-span-1">id</span>
+          <span className="col-span-6">project</span>
+          <span className="col-span-2">lang</span>
+          <span className="col-span-2">updated</span>
+          <span className="col-span-1 text-right">↗</span>
         </div>
 
-        {/* View all CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.7 }}
-          className="text-center mt-12"
-        >
+        <ol ref={listRef} className="relative" onPointerMove={onMove} onPointerLeave={() => setHovered(null)}>
+          {repos.map((repo, i) => (
+            <motion.li
+              key={repo.name}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.4 }}
+              transition={{ duration: 0.6, delay: i * 0.08, ease: [0.2, 0.8, 0.2, 1] }}
+              onPointerEnter={() => setHovered(repo)}
+              className="group relative isolate border-b border-line"
+            >
+              {/* Hard-edged fill that wipes in from the left on hover */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 -z-10 origin-left scale-x-0 bg-acid transition-transform duration-500 ease-[cubic-bezier(.7,0,.2,1)] group-hover:scale-x-100"
+              />
+              <div className="grid grid-cols-12 items-baseline gap-x-4 gap-y-2 px-1 py-7 transition-colors duration-300 group-hover:text-ink md:py-9">
+                <span className="col-span-2 text-xs text-dim group-hover:text-ink md:col-span-1">
+                  {String(i + 1).padStart(3, '0')}
+                </span>
+                <h3 className="col-span-10 text-[clamp(1.75rem,4.5vw,3.75rem)] font-extrabold uppercase leading-none tracking-tight md:col-span-6">
+                  <a href={repo.url} target="_blank" rel="noopener noreferrer" className="after:absolute after:inset-0">
+                    <ScrambleText text={repo.name} onHover duration={500} />
+                  </a>
+                </h3>
+                <span className="col-span-6 col-start-3 text-xs md:col-span-2 md:col-start-auto">
+                  <span style={{ color: repo.languageColor }} className="group-hover:text-ink">■</span> {repo.language}
+                </span>
+                <span className="col-span-4 text-xs text-dim group-hover:text-ink md:col-span-2">
+                  {formatDate(repo.updatedAt)}
+                </span>
+                <span className="hidden text-right text-2xl transition-transform duration-300 group-hover:-rotate-45 md:col-span-1 md:block">
+                  →
+                </span>
+                <p className="col-span-10 col-start-3 max-w-xl text-sm text-dim group-hover:text-ink md:col-span-6 md:col-start-2">
+                  {repo.description}
+                </p>
+                {repo.homepage && (
+                  <a
+                    href={repo.homepage}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative z-10 col-span-10 col-start-3 w-fit text-xs uppercase tracking-[0.15em] text-acid hover:underline group-hover:text-ink md:col-span-3 md:col-start-auto"
+                  >
+                    <span className="animate-pulse">●</span> live → {new URL(repo.homepage).host}
+                  </a>
+                )}
+              </div>
+            </motion.li>
+          ))}
+          <AnimatePresence>{hovered && <Preview key={hovered.name} repo={hovered} x={x} y={y} />}</AnimatePresence>
+        </ol>
+
+        <div className="mt-12 flex justify-end">
           <a
             href="https://github.com/domeepc?tab=repositories"
             target="_blank"
             rel="noopener noreferrer"
+            className="btn-ascii"
           >
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-violet-500/40 text-violet-300 hover:bg-violet-500/10 hover:border-violet-400 gap-2"
-            >
-              <ExternalLink size={16} />
-              View All Repositories
-            </Button>
+            <ScrambleText text="all repositories" onView={false} onHover />
+            <span className="arrow">→</span>
           </a>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
