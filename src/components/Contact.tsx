@@ -140,7 +140,7 @@ export default function Contact() {
         <div className="mt-16 grid gap-12 md:grid-cols-2">
           <div className="space-y-8">
             <p className="max-w-md text-lg leading-relaxed">
-              Got a project, an internship, or a weird embedded bug? My DMs are open —
+              Got a project, a question, or a weird embedded bug? My DMs are open —
               ping me on any channel below, or poke the terminal.
             </p>
             <ul className="divide-y divide-line border-y border-line">

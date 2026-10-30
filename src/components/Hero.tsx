@@ -16,7 +16,7 @@ const ROLES = [
 ];
 
 const TICKER = [
-  'open to collaborations',
+  'currently interning @ abysalto',
   'based in split, croatia',
   'web · embedded · algorithms',
   'currently shipping activitysearch.eu',
@@ -93,7 +93,7 @@ export default function Hero() {
             ['index', 'portfolio/v2026'],
             ['coords', '43.55°N 16.36°E'],
             ['focus', 'web + embedded'],
-            ['status', <span key="s" className="text-acid">● available</span>],
+            ['status', <span key="s" className="text-dim"><span className="text-acid">●</span> employed</span>],
           ].map(([k, v]) => (
             <div key={k as string}>
               <dt className="text-faint">{k}</dt>
