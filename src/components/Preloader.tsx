@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isBooted, markBooted } from '@/lib/boot';
+import { lockScroll } from '@/lib/smoothScroll';
 
 const LOG = [
   'BIOS v2.6 — domeepc systems',
@@ -23,7 +24,7 @@ export default function Preloader() {
       setGone(true);
       return;
     }
-    document.body.style.overflow = 'hidden';
+    lockScroll(true);
     let raf = 0;
     let timer = 0;
     const t0 = performance.now();
@@ -31,7 +32,7 @@ export default function Preloader() {
       cancelAnimationFrame(raf);
       setProgress(1);
       setLeaving(true);
-      document.body.style.overflow = '';
+      lockScroll(false);
       markBooted();
       timer = window.setTimeout(() => setGone(true), 900);
     };
@@ -51,7 +52,7 @@ export default function Preloader() {
       clearTimeout(timer);
       window.removeEventListener('keydown', skip);
       window.removeEventListener('pointerdown', skip);
-      document.body.style.overflow = '';
+      lockScroll(false);
     };
   }, []);
 

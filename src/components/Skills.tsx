@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useInView } from 'framer-motion';
+import { useReveal } from '@/hooks/useReveal';
+import { useInView } from '@/hooks/useInView';
 import { skills } from '@/lib/data';
 import type { Skill } from '@/lib/data';
 import { prefersReducedMotion } from '@/lib/boot';
@@ -18,7 +19,7 @@ const groups: { key: Skill['category']; label: string; file: string }[] = [
 /** `[████████░░░░]` that fills one cell at a time once visible. */
 function Meter({ level, delay }: { level: Skill['level']; delay: number }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 1 });
+  const inView = useInView(ref, { amount: 1 });
   const target = levelCells[level];
   const [cells, setCells] = useState(0);
 
@@ -50,10 +51,15 @@ function Meter({ level, delay }: { level: Skill['level']; delay: number }) {
 }
 
 export default function Skills() {
+  const ref = useRef<HTMLElement>(null);
+  useReveal(ref);
   const names = skills.map((s) => s.name);
 
   return (
-    <section id="skills" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
+    <section
+      ref={ref}
+      tabIndex={-1}
+      id="skills" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="02" title="stack" command="ls -la ~/skills" />
 

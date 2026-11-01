@@ -15,10 +15,10 @@ import Preloader from '../components/Preloader';
   <Navbar client:load baseUrl={import.meta.env.BASE_URL} />
   <main class="relative z-10">
     <Hero client:load />
-    <About client:visible />
-    <Skills client:visible />
-    <Projects client:visible />
-    <Timeline client:visible />
-    <Contact client:visible />
+    <About client:visible={{ rootMargin: "400px" }} />
+    <Skills client:visible={{ rootMargin: "400px" }} />
+    <Projects client:visible={{ rootMargin: "400px" }} />
+    <Timeline client:visible={{ rootMargin: "400px" }} />
+    <Contact client:visible={{ rootMargin: "400px" }} />
   </main>
 </Layout>
