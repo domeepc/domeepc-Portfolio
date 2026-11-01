@@ -142,8 +142,10 @@ export default function Navbar(_: { baseUrl?: string }) {
                 key={link.href}
                 href={link.href}
                 onClick={(e) => {
-                  handleNav(e);
+                  // Unlock first: Lenis.start() resets and would cancel a scroll already in flight.
                   setMenuOpen(false);
+                  lockScroll(false);
+                  handleNav(e);
                 }}
                 style={{ ['--i' as string]: i }}
                 className="menu-link flex items-baseline gap-4 border-b border-line py-3 text-4xl font-extrabold uppercase"
