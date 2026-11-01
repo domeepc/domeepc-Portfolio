@@ -31,12 +31,15 @@ export default function AsciiDonut({ className }: { className?: string }) {
 
     const thetas: [number, number][] = [];
     for (let t = 0; t < Math.PI * 2; t += THETA_STEP) thetas.push([Math.cos(t), Math.sin(t)]);
-    const phis: [number, number][] = [];
-    for (let p = 0; p < Math.PI * 2; p += PHI_STEP) phis.push([Math.cos(p), Math.sin(p)]);
+    let phis: [number, number][] = [];
 
     let cols = 0, rows = 0, cellW = 0, cellH = 0, fontSize = 12;
     let zbuf = new Float32Array(0);
     let lum = new Int8Array(0);
+    // Pre-rendered glyph per ramp level: drawImage from this is far cheaper than fillText per cell.
+    const atlas = document.createElement('canvas');
+    const actx = atlas.getContext('2d')!;
+    let atlasW = 0, atlasH = 0, glyphW = 0, glyphH = 0;
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -53,6 +56,25 @@ export default function AsciiDonut({ className }: { className?: string }) {
       rows = Math.floor(height / cellH);
       zbuf = new Float32Array(cols * rows);
       lum = new Int8Array(cols * rows);
+
+      // Narrow screens have fewer cells (and show the donut faintly), so sample half as densely.
+      const phiStep = width < 768 ? PHI_STEP * 2 : PHI_STEP;
+      phis = [];
+      for (let p = 0; p < Math.PI * 2; p += phiStep) phis.push([Math.cos(p), Math.sin(p)]);
+
+      atlasW = Math.ceil(cellW * dpr);
+      atlasH = Math.ceil(cellH * dpr);
+      glyphW = atlasW / dpr;
+      glyphH = atlasH / dpr;
+      atlas.width = atlasW * RAMP.length;
+      atlas.height = atlasH;
+      actx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      actx.font = ctx.font;
+      actx.textBaseline = 'top';
+      for (let l = 0; l < RAMP.length; l++) {
+        actx.fillStyle = colors[l < 3 ? 0 : l < 7 ? 1 : l < 10 ? 2 : 3];
+        actx.fillText(RAMP[l], (l * atlasW) / dpr, 0);
+      }
     };
 
     let A = 1, B = 0.4;
@@ -86,16 +108,10 @@ export default function AsciiDonut({ className }: { className?: string }) {
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Group by colour bucket to keep fillStyle switches to four per frame.
-      for (let bucket = 0; bucket < 4; bucket++) {
-        ctx.fillStyle = colors[bucket];
-        for (let i = 0; i < lum.length; i++) {
-          const l = lum[i];
-          if (l < 0) continue;
-          const bkt = l < 3 ? 0 : l < 7 ? 1 : l < 10 ? 2 : 3;
-          if (bkt !== bucket) continue;
-          ctx.fillText(RAMP[l], (i % cols) * cellW, ((i / cols) | 0) * cellH);
-        }
+      for (let i = 0; i < lum.length; i++) {
+        const l = lum[i];
+        if (l < 0) continue;
+        ctx.drawImage(atlas, l * atlasW, 0, atlasW, atlasH, (i % cols) * cellW, ((i / cols) | 0) * cellH, glyphW, glyphH);
       }
     };
 

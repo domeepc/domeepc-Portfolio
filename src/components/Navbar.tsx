@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { profile } from '@/lib/data';
-import { scrollToHash } from '@/lib/smoothScroll';
+import { lockScroll, scrollToHash } from '@/lib/smoothScroll';
 import ScrambleText from './ascii/ScrambleText';
 
 const navLinks = [
@@ -47,7 +46,8 @@ export default function Navbar(_: { baseUrl?: string }) {
   useEffect(() => {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? window.scrollY / max : 0);
+      // Integer percent so React skips renders until the readout actually changes.
+      setProgress(max > 0 ? Math.round((window.scrollY / max) * 100) / 100 : 0);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -68,13 +68,13 @@ export default function Navbar(_: { baseUrl?: string }) {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflowY = menuOpen ? 'hidden' : '';
     if (!menuOpen) return;
+    lockScroll(true);
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMenuOpen(false);
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflowY = '';
+      lockScroll(false);
     };
   }, [menuOpen]);
 
@@ -82,7 +82,7 @@ export default function Navbar(_: { baseUrl?: string }) {
 
   return (
     <>
-      <nav className="fixed inset-x-0 top-0 z-[60] border-b border-line bg-ink/85 backdrop-blur-md">
+      <nav className="fixed inset-x-0 top-0 z-[60] border-b border-line bg-ink/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 text-xs md:px-8">
           <a href="#home" onClick={handleNav} className="group flex items-center whitespace-nowrap">
             <span className="text-acid">{profile.handle}</span>
@@ -119,6 +119,7 @@ export default function Navbar(_: { baseUrl?: string }) {
             className="text-paper md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
             aria-label="Toggle menu"
           >
             [{menuOpen ? 'close' : 'menu'}]
@@ -131,36 +132,28 @@ export default function Navbar(_: { baseUrl?: string }) {
         />
       </nav>
 
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ clipPath: 'inset(0 0 100% 0)' }}
-            animate={{ clipPath: 'inset(0 0 0% 0)' }}
-            exit={{ clipPath: 'inset(0 0 100% 0)' }}
-            transition={{ duration: 0.5, ease: [0.7, 0, 0.2, 1] }}
-            className="fixed inset-0 z-50 flex flex-col justify-center gap-2 bg-ink px-6 pt-16 md:hidden"
-          >
+      <div
+        id="mobile-menu"
+        data-open={menuOpen || undefined}
+        className="menu-panel fixed inset-0 z-50 flex flex-col justify-center gap-2 bg-ink px-6 pt-16 md:hidden"
+      >
             {navLinks.map((link, i) => (
-              <motion.a
+              <a
                 key={link.href}
                 href={link.href}
                 onClick={(e) => {
                   handleNav(e);
                   setMenuOpen(false);
                 }}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 + i * 0.05 }}
-                className="flex items-baseline gap-4 border-b border-line py-3 text-4xl font-extrabold uppercase"
+                style={{ ['--i' as string]: i }}
+                className="menu-link flex items-baseline gap-4 border-b border-line py-3 text-4xl font-extrabold uppercase"
               >
                 <span className="text-xs font-normal text-acid">0{i + 1}</span>
                 <ScrambleText text={link.label} duration={500} />
-              </motion.a>
+              </a>
             ))}
             <p className="mt-8 text-xs text-dim">SPLIT, HR — {time}</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
     </>
   );
 }

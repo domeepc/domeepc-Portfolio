@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { useRef } from 'react';
+import { useReveal } from '@/hooks/useReveal';
 import { timeline } from '@/lib/data';
 import type { TimelineEntry } from '@/lib/data';
 import SectionHeader from './ascii/SectionHeader';
@@ -18,10 +19,15 @@ const typeTag: Record<TimelineEntry['type'], string> = {
 };
 
 export default function Timeline() {
+  const ref = useRef<HTMLElement>(null);
+  useReveal(ref);
   const entries = [...timeline].reverse();
 
   return (
-    <section id="experience" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
+    <section
+      ref={ref}
+      tabIndex={-1}
+      id="experience" className="relative scroll-mt-16 border-t border-line py-28 md:py-40">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <SectionHeader index="04" title="log" command="git log --graph --all" />
 
@@ -29,33 +35,14 @@ export default function Timeline() {
           {entries.map((entry, i) => {
             const isHead = i === 0;
             return (
-              <motion.li
-                key={entry.title}
-                className="group grid grid-cols-[3ch_1fr] gap-x-3 md:grid-cols-[4ch_1fr] md:gap-x-6"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.4 }}
-              >
+              <li key={entry.title} data-reveal="" className="group grid grid-cols-[3ch_1fr] gap-x-3 md:grid-cols-[4ch_1fr] md:gap-x-6">
                 {/* Graph gutter: a commit node and the rail below it */}
                 <div aria-hidden="true" className="flex flex-col items-center">
-                  <motion.span
-                    className="text-lg leading-6 text-acid"
-                    initial={{ scale: 0, rotate: -180 }}
-                    whileInView={{ scale: 1, rotate: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}
-                  >
+                  <span className="text-lg leading-6 text-acid">
                     {entry.current ? '◉' : '*'}
-                  </motion.span>
+                  </span>
                   {i < entries.length - 1 && (
-                    <motion.span
-                      className="w-px flex-1 origin-top bg-[repeating-linear-gradient(to_bottom,var(--color-faint)_0_6px,transparent_6px_10px)]"
-                      initial={{ scaleY: 0 }}
-                      whileInView={{ scaleY: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.9, delay: 0.2, ease: [0.7, 0, 0.2, 1] }}
-                    />
+                    <span data-draw="y" className="w-px flex-1 origin-top bg-[repeating-linear-gradient(to_bottom,var(--color-faint)_0_6px,transparent_6px_10px)]" />
                   )}
                 </div>
 
@@ -89,7 +76,7 @@ export default function Timeline() {
                     {entry.description}
                   </p>
                 </div>
-              </motion.li>
+              </li>
             );
           })}
         </ol>

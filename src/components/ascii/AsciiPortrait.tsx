@@ -75,10 +75,31 @@ export default function AsciiPortrait({ src, alt, className }: Props) {
       ctx.font = `${cellH * 0.95}px "JetBrains Mono", monospace`;
       ctx.textBaseline = 'top';
       ctx.textAlign = 'center';
+      gridCache = photoCache = null;
+    };
+
+    // Static layers built once, so the lens loop doesn't re-typeset the grid every frame.
+    let gridCache: HTMLCanvasElement | null = null;
+    let photoCache: HTMLCanvasElement | null = null;
+    const snapshot = (paint: (c: CanvasRenderingContext2D) => void) => {
+      const c = document.createElement('canvas');
+      c.width = canvas.width;
+      c.height = canvas.height;
+      paint(c.getContext('2d')!);
+      return c;
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, size, size);
+      if (gridCache) ctx.drawImage(gridCache, 0, 0, size, size);
+      else {
+        drawGrid();
+        if (reveal >= 1) gridCache = snapshot((c) => c.drawImage(canvas, 0, 0));
+      }
+      drawLens();
+    };
+
+    const drawGrid = () => {
       const visibleRows = Math.floor(reveal * rows);
       for (let y = 0; y < rows; y++) {
         const typing = y === visibleRows;
@@ -90,15 +111,21 @@ export default function AsciiPortrait({ src, alt, className }: Props) {
           ctx.fillText(chars[i], x * cellW + cellW / 2, y * cellH);
         }
       }
+    };
+
+    const drawLens = () => {
       if (lens.r > 1) {
+        photoCache ??= snapshot((c) => {
+          c.filter = 'grayscale(1) contrast(1.1)';
+          c.drawImage(img, 0, 0, c.canvas.width, c.canvas.height);
+        });
         ctx.save();
         ctx.beginPath();
         ctx.arc(lens.x, lens.y, lens.r, 0, Math.PI * 2);
         ctx.clip();
         ctx.fillStyle = '#0b0b0a';
         ctx.fillRect(0, 0, size, size);
-        ctx.filter = 'grayscale(1) contrast(1.1)';
-        ctx.drawImage(img, 0, 0, size, size);
+        ctx.drawImage(photoCache, 0, 0, size, size);
         ctx.restore();
         // Dashed ASCII ring around the lens
         ctx.fillStyle = acid;

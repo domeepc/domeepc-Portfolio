@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useInView } from 'framer-motion';
+import { useInView } from '@/hooks/useInView';
 import { useScramble } from '@/hooks/useScramble';
 import { onBooted } from '@/lib/boot';
 
@@ -15,8 +15,9 @@ interface Props {
 
 export default function ScrambleText({ text, className, duration, onView = true, onHover = false }: Props) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.6 });
-  const { output, play } = useScramble(text, { duration });
+  const inView = useInView(ref, { amount: 0.6 });
+  const outRef = useRef<HTMLSpanElement>(null);
+  const play = useScramble(text, outRef, { duration });
 
   useEffect(() => {
     if (onView && inView) return onBooted(play);
@@ -31,7 +32,7 @@ export default function ScrambleText({ text, className, duration, onView = true,
 
   return (
     <span ref={ref} className={className} aria-label={text}>
-      <span aria-hidden="true">{output}</span>
+      <span ref={outRef} aria-hidden="true">{text}</span>
     </span>
   );
 }

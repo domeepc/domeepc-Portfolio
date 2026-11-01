@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { useInView } from 'framer-motion';
+import { useEffect, useRef } from 'react';
+import { useInView } from '@/hooks/useInView';
 import { BLOCKS, onBooted, prefersReducedMotion } from '@/lib/boot';
 import { cn } from '@/lib/utils';
 
@@ -17,11 +17,13 @@ interface Props {
  */
 export default function AsciiReveal({ art, label, className, duration = 1100, delay = 0 }: Props) {
   const ref = useRef<HTMLPreElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.4 });
-  const [frame, setFrame] = useState(() => art.replace(/[^\n]/g, ' '));
+  const inView = useInView(ref, { amount: 0.4 });
 
   useEffect(() => {
     if (!inView) return;
+    const pre = ref.current!;
+    // Frames go straight to the DOM: a React render per frame blows the budget.
+    const setFrame = (s: string) => { pre.textContent = s; };
     if (prefersReducedMotion()) {
       setFrame(art);
       return;
@@ -64,7 +66,7 @@ export default function AsciiReveal({ art, label, className, duration = 1100, de
 
   return (
     <pre ref={ref} role="img" aria-label={label} className={cn('ascii-pre', className)}>
-      {frame}
+      {art.replace(/[^\n]/g, ' ')}
     </pre>
   );
 }

@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { useReveal } from '@/hooks/useReveal';
 import { profile } from '@/lib/data';
 import { talkBanner } from '@/lib/ascii';
 import { smoothScrollTo } from '@/lib/smoothScroll';
 import AsciiBox from './ascii/AsciiBox';
 import AsciiReveal from './ascii/AsciiReveal';
 import ScrambleText from './ascii/ScrambleText';
+import SplitWords from './ascii/SplitWords';
 
 type Line = { kind: 'in' | 'out'; text: string };
 
@@ -70,6 +72,7 @@ function Terminal() {
     <AsciiBox label="tty1" className="flex h-full flex-col p-5 pt-7 text-[13px]">
       <div
         ref={scrollRef}
+        data-lenis-prevent=""
         className="h-56 overflow-y-auto pr-2"
         onClick={() => inputRef.current?.focus()}
         aria-live="polite"
@@ -121,12 +124,17 @@ function Terminal() {
 }
 
 export default function Contact() {
+  const ref = useRef<HTMLElement>(null);
+  useReveal(ref);
   return (
-    <footer id="contact" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
+    <footer
+      ref={ref}
+      tabIndex={-1}
+      id="contact" className="relative scroll-mt-16 border-t border-line pt-28 md:pt-40">
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="flex items-center gap-4 text-xs tracking-[0.2em] text-dim">
           <span className="text-acid">// 05</span>
-          <span aria-hidden="true" className="flex-1 overflow-hidden whitespace-nowrap text-faint">
+          <span aria-hidden="true" data-draw="" className="flex-1 overflow-hidden whitespace-nowrap text-faint">
             {'─'.repeat(240)}
           </span>
           <span>CONTACT</span>
@@ -139,11 +147,11 @@ export default function Contact() {
 
         <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-2">
           <div className="space-y-8">
-            <p className="max-w-md text-lg leading-relaxed">
-              Got a project, a question, or a weird embedded bug? My DMs are open —
-              ping me on any channel below, or poke the terminal.
-            </p>
-            <ul className="divide-y divide-line border-y border-line">
+            <SplitWords
+              className="max-w-md text-lg leading-relaxed"
+              parts={['Got a project, a question, or a weird embedded bug? My DMs are open — ping me on any channel below, or poke the terminal.']}
+            />
+            <ul data-reveal="" className="divide-y divide-line border-y border-line">
               {[
                 { label: 'github', href: profile.githubUrl, sub: `@${profile.handle}` },
                 { label: 'linkedin', href: profile.linkedinUrl, sub: 'domagoj-milardović' },
@@ -169,7 +177,9 @@ export default function Contact() {
               ))}
             </ul>
           </div>
-          <Terminal />
+          <div data-reveal="">
+            <Terminal />
+          </div>
         </div>
 
         <div className="mt-28 flex flex-col gap-4 border-t border-line py-8 text-[11px] uppercase tracking-[0.15em] text-dim md:flex-row md:items-center md:justify-between">

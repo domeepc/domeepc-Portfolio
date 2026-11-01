@@ -166,6 +166,7 @@
   transform: scaleX(1);
   transform-origin: left;
 }
+
 .btn-ascii .arrow {
   display: inline-block;
   transition: transform 0.35s cubic-bezier(.7,0,.2,1);
@@ -231,7 +232,8 @@
   animation: marquee-scroll var(--speed, 40s) linear infinite;
 }
 .marquee-track[data-reverse] { animation-direction: reverse; }
-.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee:hover .marquee-track,
+.marquee:not(.is-onscreen) .marquee-track { animation-play-state: paused; }
 
 /* Preloader — hidden instantly on repeat visits (see Layout inline script) */
 html[data-booted] .preloader { display: none; }
@@ -249,4 +251,61 @@ html[data-booted] .preloader { display: none; }
     transition-duration: 0.001ms !important;
   }
   .crt { animation: none; }
+}
+
+/* ── Motion (GSAP, see Motion.tsx) ────────────────────────────── */
+
+/* Pre-JS hero hide; the failsafe matches the preloader's so copy never stays hidden. */
+html.motion-pending [data-hero] {
+  opacity: 0;
+  animation: motion-failsafe 0s linear 6s forwards;
+}
+@keyframes motion-failsafe {
+  to { opacity: 1; }
+}
+
+/* Word masks for <SplitWords>; padding keeps descenders inside the clip. */
+.split-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.split-inner { display: inline-block; }
+
+/* Programmatic focus targets (sections reached via in-page nav) */
+[tabindex='-1']:focus { outline: none; }
+
+/* Mobile menu: clip-path wipe (replaces the old AnimatePresence version) */
+.menu-panel {
+  clip-path: inset(0 0 100% 0);
+  visibility: hidden;
+  transition: clip-path 0.5s cubic-bezier(.7,0,.2,1), visibility 0s linear 0.5s;
+}
+.menu-panel[data-open] {
+  clip-path: inset(0 0 0% 0);
+  visibility: visible;
+  transition: clip-path 0.5s cubic-bezier(.7,0,.2,1);
+}
+.menu-panel .menu-link {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s, transform 0.4s cubic-bezier(.2,.8,.2,1);
+}
+.menu-panel[data-open] .menu-link {
+  opacity: 1;
+  transform: none;
+  transition-delay: calc(0.15s + var(--i) * 0.05s);
+}
+
+/* Project hover preview pop */
+.preview-card {
+  opacity: 0;
+  transform: scale(0.9) rotate(-2deg);
+  transition: opacity 0.2s, transform 0.2s;
+}
+.preview-card[data-show] {
+  opacity: 1;
+  transform: none;
 }

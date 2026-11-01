@@ -92,7 +92,7 @@ export default function AsciiCursor() {
         <span className="absolute -translate-x-1/2 -translate-y-1/2 text-[18px] leading-none text-white transition-transform duration-200 group-data-[down=1]:scale-75 group-data-[hover=1]:opacity-0">
           █
         </span>
-        <span className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-pre text-[20px] leading-none text-white opacity-0 transition-all duration-200 group-data-[hover=1]:opacity-100 group-data-[hover=1]:tracking-[0.6em] tracking-normal">
+        <span className="absolute -translate-x-1/2 -translate-y-1/2 whitespace-pre text-[20px] leading-none text-white opacity-0 transition-[opacity,letter-spacing] duration-200 group-data-[hover=1]:opacity-100 group-data-[hover=1]:tracking-[0.6em] tracking-normal">
           [ ]
         </span>
       </div>

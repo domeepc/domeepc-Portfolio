@@ -1,39 +1,32 @@
-/**
- * Smoothly scrolls to a target Y position using an ease-out-expo curve.
- * Duration scales with distance so short jumps feel snappy and long jumps feel cinematic.
- */
-export function smoothScrollTo(targetY: number) {
-  const startY = window.scrollY;
-  const distance = targetY - startY;
-  if (Math.abs(distance) < 1) return;
+import type Lenis from 'lenis';
+import { prefersReducedMotion } from './boot';
 
-  // Scale duration: 400ms minimum, up to 900ms for very long distances.
-  const duration = Math.min(900, Math.max(400, Math.abs(distance) * 0.4));
-  const startTime = performance.now();
+const NAVBAR_HEIGHT = 72;
 
-  function easeOutExpo(t: number): number {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-  }
+/** The page's single Lenis instance, set by the Motion island (null under reduced motion). */
+let lenis: Lenis | null = null;
 
-  function step(now: number) {
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    window.scrollTo(0, startY + distance * easeOutExpo(t));
-    if (t < 1) requestAnimationFrame(step);
-  }
-
-  requestAnimationFrame(step);
+export function setLenis(instance: Lenis | null) {
+  lenis = instance;
 }
 
-/**
- * Resolves an anchor href like "#skills" to the element's offsetTop,
- * accounting for the fixed navbar height.
- */
+/** Locks or unlocks page scrolling (preloader, mobile menu). */
+export function lockScroll(locked: boolean) {
+  document.body.style.overflow = locked ? 'hidden' : '';
+  if (locked) lenis?.stop();
+  else lenis?.start();
+}
+
+export function smoothScrollTo(targetY: number) {
+  if (lenis) return lenis.scrollTo(targetY, { duration: 1.2, force: true });
+  window.scrollTo({ top: targetY, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+}
+
+/** Scrolls to an anchor like "#skills", clearing the fixed navbar, then moves focus there. */
 export function scrollToHash(hash: string) {
-  const id = hash.replace("#", "");
-  const el = document.getElementById(id);
+  const el = document.getElementById(hash.replace('#', ''));
   if (!el) return;
-  const navbarHeight = 72; // matches py-4 + content height
-  const top = el.getBoundingClientRect().top + window.scrollY - navbarHeight;
-  smoothScrollTo(top);
+  smoothScrollTo(el.getBoundingClientRect().top + window.scrollY - NAVBAR_HEIGHT);
+  history.replaceState(null, '', hash);
+  el.focus({ preventScroll: true });
 }

@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import type { RefObject } from 'react';
 import { prefersReducedMotion, randomGlyph } from '@/lib/boot';
 
 /**
- * Decodes `text` from random glyphs, left to right. Call `play()` to (re)run it.
+ * Decodes `text` from random glyphs into `ref`, left to right. Call `play()` to (re)run it.
+ * Writes to the DOM directly so a running scramble never re-renders React.
  * Spaces are preserved so the word shape stays readable while it resolves.
  */
-export function useScramble(text: string, { duration = 600, autoplay = false } = {}) {
-  const [output, setOutput] = useState(text);
+export function useScramble(text: string, ref: RefObject<HTMLElement | null>, { duration = 600 } = {}) {
   const frame = useRef(0);
 
   const play = useCallback(() => {
-    if (prefersReducedMotion()) return;
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
     cancelAnimationFrame(frame.current);
     const start = performance.now();
     const tick = (now: number) => {
@@ -21,17 +23,16 @@ export function useScramble(text: string, { duration = 600, autoplay = false } =
         const ch = text[i];
         next += i < revealed || ch === ' ' ? ch : randomGlyph();
       }
-      setOutput(next);
+      el.textContent = next;
       if (t < 1) frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);
-  }, [text, duration]);
+  }, [text, duration, ref]);
 
   useEffect(() => {
-    setOutput(text);
-    if (autoplay) play();
+    if (ref.current) ref.current.textContent = text;
     return () => cancelAnimationFrame(frame.current);
-  }, [text, autoplay, play]);
+  }, [text, ref]);
 
-  return { output, play };
+  return play;
 }

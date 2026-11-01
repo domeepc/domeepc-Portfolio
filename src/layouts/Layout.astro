@@ -1,6 +1,7 @@
 ---
 import '../styles/globals.css';
 import AsciiCursor from '../components/AsciiCursor';
+import Motion from '../components/Motion';
 
 interface Props {
   title?: string;
@@ -35,10 +36,11 @@ const {
     />
     <script is:inline>
       // Skip the boot sequence on repeat visits within a session, before first paint.
+      // Also hide hero copy until the GSAP intro takes over (CSS failsafe reveals it if JS never runs).
       try {
-        if (sessionStorage.getItem('booted') || matchMedia('(prefers-reduced-motion: reduce)').matches) {
-          document.documentElement.dataset.booted = '1';
-        }
+        var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (sessionStorage.getItem('booted') || reduce) document.documentElement.dataset.booted = '1';
+        if (!reduce) document.documentElement.classList.add('motion-pending');
       } catch (_) {}
     </script>
     <title>{title}</title>
@@ -46,6 +48,7 @@ const {
   <body class="min-h-screen antialiased overflow-x-hidden">
     <div aria-hidden="true" class="crt"></div>
     <AsciiCursor client:load />
+    <Motion client:load />
     <slot />
   </body>
 </html>
